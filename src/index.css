@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
+
+  /* PeopleCor brand tokens from Figma */
+  --color-brand: #0eb1e6;
+  --color-brand-dark: #0097cb;
+  --color-stats: #3d505f;
+  --color-stats-badge: #20303e;
+  --color-stats-badge-hover: #2c4050;
+  --color-success-pill-hover: #4aad63;
+  --color-success: #57bc6f;
+  --color-success-dark: #43a259;
+  --color-success-muted: #57bc6f1a;
+  --color-page: #f1f5f8;
+  --color-row-hover-left: color-mix(in srgb, var(--color-ink) 2.5%, var(--color-page));
+  --color-row-hover-right: color-mix(in srgb, var(--color-ink) 2.5%, #ffffff);
+  --color-row-selected: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
+  --color-row-selected-left: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
+  --color-row-selected-right: color-mix(in srgb, var(--color-brand) 10%, #ffffff);
+  --color-ink: #0e1821;
+  --color-muted: #859098;
+  --color-label: #acb4ba;
+  --color-subtle: #606d78;
+  --color-surface-muted: #e7ecf0;
+  --color-border: #d5dce2;
+  --color-border-input: #acb4ba;
+  --color-danger: #e05252;
+  --color-danger-menu: #e95156;
+  --color-danger-menu-foreground: #e95156;
+  --color-warning: #f5a623;
+  --color-warning-muted: #f5a6231a;
+
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-pill: 19px;
+}
+
+@layer base {
+  body {
+    @apply bg-page text-ink font-sans antialiased;
+    margin: 0;
+  }
+
+  .material-symbols-rounded {
+    font-family: "Material Symbols Rounded";
+    font-weight: normal;
+    font-style: normal;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+  }
+}
