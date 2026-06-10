@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MaterialIcon } from "@/components/icons/material-icon";
+import { inspectorRegistry } from "@/lib/inspector-registry";
+import { inspectorProps } from "@/lib/inspector";
 import { cn } from "@/lib/utils";
 
 const DISSOLVE_MS = 200;
 const AUTO_DISMISS_MS = 5000;
 
-export type ToastAction = "approved" | "unapproved";
+export type ToastAction = "approved" | "unapproved" | "approval-blocked";
 
 const toastActionStyles = {
   approved: {
@@ -15,6 +17,10 @@ const toastActionStyles = {
   unapproved: {
     icon: "undo",
     iconClassName: "text-warning",
+  },
+  "approval-blocked": {
+    icon: "warning",
+    iconClassName: "text-danger",
   },
 } as const;
 
@@ -58,6 +64,7 @@ export function Toast({ action, message, onDismiss }: ToastProps) {
     <div
       role="status"
       aria-live="polite"
+      {...inspectorProps(inspectorRegistry.TST)}
       className={cn(
         "fixed bottom-6 left-1/2 z-50 flex min-w-[420px] -translate-x-1/2 items-center justify-between gap-3 rounded-sm bg-black px-4 py-2.5 text-sm text-white shadow-md transition-opacity duration-200 ease-in-out",
         visible ? "opacity-100" : "opacity-0",
@@ -75,7 +82,7 @@ export function Toast({ action, message, onDismiss }: ToastProps) {
       <button
         type="button"
         aria-label="Close notification"
-        className="flex size-6 shrink-0 items-center justify-center rounded-sm text-white/70 hover:bg-white/10 hover:text-white"
+        className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-white/70 hover:bg-white/10 hover:text-white"
         onClick={dismiss}
       >
         <MaterialIcon name="close" size={16} />

@@ -1,14 +1,15 @@
 import {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   type ComponentPropsWithoutRef,
   type ReactNode,
   type RefObject,
 } from "react";
-import { createPortal } from "react-dom";
+import { TooltipPortal } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+export { HoverTooltip } from "@/components/ui/hover-tooltip";
 
 function TruncationTooltip({
   show,
@@ -19,76 +20,14 @@ function TruncationTooltip({
   children: string;
   anchorRef: RefObject<HTMLElement | null>;
 }) {
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-
-  useLayoutEffect(() => {
-    if (!show || !anchorRef.current) {
-      return;
-    }
-
-    const updatePosition = () => {
-      const anchor = anchorRef.current;
-      if (!anchor) {
-        return;
-      }
-
-      const rect = anchor.getBoundingClientRect();
-      setPosition({
-        top: rect.top - 6,
-        left: rect.left + rect.width / 2,
-      });
-    };
-
-    updatePosition();
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
-
-    return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [anchorRef, children, show]);
-
-  if (!show) {
-    return null;
-  }
-
-  return createPortal(
-    <span
-      role="tooltip"
-      className="pointer-events-none fixed z-[200] max-w-[220px] -translate-x-1/2 -translate-y-full rounded-sm bg-ink px-2 py-1 text-center text-xs leading-4 font-normal normal-case text-white shadow-md"
-      style={{ top: position.top, left: position.left }}
-    >
-      {children}
-    </span>,
-    document.body,
-  );
-}
-
-export function HoverTooltip({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  const anchorRef = useRef<HTMLSpanElement>(null);
-  const [showTooltip, setShowTooltip] = useState(false);
-
   return (
-    <span
-      ref={anchorRef}
-      className="relative inline-flex"
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-      onFocus={() => setShowTooltip(true)}
-      onBlur={() => setShowTooltip(false)}
+    <TooltipPortal
+      anchorRef={anchorRef}
+      className="max-w-[220px] px-2 py-1 text-center text-xs leading-4 font-normal normal-case"
+      show={show}
     >
       {children}
-      <TruncationTooltip anchorRef={anchorRef} show={showTooltip}>
-        {label}
-      </TruncationTooltip>
-    </span>
+    </TooltipPortal>
   );
 }
 
@@ -149,18 +88,18 @@ export function TruncatedText({
         "relative min-w-0 max-w-full",
         inline ? "inline-block" : "block",
       )}
+      onBlur={() => setShowTooltip(false)}
+      onFocus={() => {
+        if (isTruncated) {
+          setShowTooltip(true);
+        }
+      }}
       onMouseEnter={() => {
         if (isTruncated) {
           setShowTooltip(true);
         }
       }}
       onMouseLeave={() => setShowTooltip(false)}
-      onFocus={() => {
-        if (isTruncated) {
-          setShowTooltip(true);
-        }
-      }}
-      onBlur={() => setShowTooltip(false)}
     >
       <p ref={textRef} className={cn("m-0 truncate", className)} {...props}>
         {children}
@@ -190,18 +129,18 @@ export function TruncatedButton({
     <span
       ref={anchorRef}
       className="relative block min-w-0 max-w-full"
+      onBlur={() => setShowTooltip(false)}
+      onFocus={() => {
+        if (isTruncated) {
+          setShowTooltip(true);
+        }
+      }}
       onMouseEnter={() => {
         if (isTruncated) {
           setShowTooltip(true);
         }
       }}
       onMouseLeave={() => setShowTooltip(false)}
-      onFocus={() => {
-        if (isTruncated) {
-          setShowTooltip(true);
-        }
-      }}
-      onBlur={() => setShowTooltip(false)}
     >
       <button
         ref={textRef}

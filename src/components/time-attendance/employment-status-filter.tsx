@@ -50,7 +50,7 @@ export function EmploymentStatusFilter({
         <button
           type="button"
           className={cn(
-            "flex h-8 items-center gap-2 rounded-sm border px-2 text-xs font-bold uppercase transition-colors",
+            "flex h-8 cursor-pointer items-center gap-0.5 rounded-sm border px-2 text-xs font-bold uppercase transition-colors",
             isFilterActive
               ? "border-brand bg-row-selected text-ink hover:bg-row-selected"
               : "border-transparent bg-surface-muted text-ink hover:bg-[#dde4e9]",
@@ -59,7 +59,7 @@ export function EmploymentStatusFilter({
           {isFilterActive
             ? `Employment Status (${activeCount})`
             : "Employment Status"}
-          <MaterialIcon name="keyboard_arrow_down" size={16} />
+          <MaterialIcon name="arrow_drop_down" size={18} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -73,7 +73,7 @@ export function EmploymentStatusFilter({
           </span>
           <button
             type="button"
-            className="text-xs leading-4 text-ink underline"
+            className="cursor-pointer text-xs leading-4 text-ink underline"
             onClick={handleHeaderAction}
           >
             {allExplicitlySelected ? "Deselect all" : "Select all"}

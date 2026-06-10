@@ -1,0 +1,72 @@
+---
+description: Reuse existing components, create only when needed, keep UI self-explanatory
+alwaysApply: true
+---
+
+# Component architecture
+
+## Reuse first
+
+Before adding UI, search and prefer existing building blocks:
+
+- **Primitives**: `src/components/ui/` (`Button`, `Input`, `Checkbox`, `HoverTooltip`, `TruncatedText`, `Badge`, etc.)
+- **Domain**: `src/components/time-attendance/` (table cells in `employee-table-cells.tsx`, toolbars, filters, menus)
+- **Layout**: `src/components/layout/`
+- **Icons**: `src/components/icons/`
+- **Design system**: `src/components/design-system/` for previews and shared patterns
+
+Extend an existing component before creating a sibling. Match naming, tokens, spacing, and inspector patterns already in the file you touch.
+
+## Create components only when needed
+
+Add a new component when at least one is true:
+
+- The UI is reused in two or more places
+- It is a distinct cell type, pattern, or feature slice (e.g. `MoneyValue`, `DeductionList`)
+- The parent file is getting hard to follow and extraction clarifies ownership
+
+Do **not** add abstractions “for later,” one-off wrappers, or config-heavy factories. Prefer the smallest diff that solves the current task.
+
+## KISS
+
+- Less is more: fewer files, fewer props, fewer variants
+- Colocate what changes together; split only when reuse or clarity demands it
+- Share styling via existing tokens/classes (`cellDetailClassName`, `DesignSystemButton`, `ds-heading`) — not new theme layers
+- Table work: keep column/sort/selection logic in the table; keep cell rendering in `*-cells.tsx` modules
+
+## Instructions must die
+
+UI should explain itself without tutorials, paragraphs of helper text, or labels that restate the obvious.
+
+- Prefer clear affordances (icons, placement, state, empty states) over “how to use this” copy
+- Use tooltips only when the control is genuinely opaque (e.g. icon-only actions) — not to document basic flows
+- Avoid inline instructions, banners, and README-style text in the product unless the user explicitly asks for them
+- When copy is needed, keep it short and action-oriented
+
+## Restrictive design
+
+Opt to work **within the design system** before adding something new or one-off. Sometimes you must choose to follow the system rather than design what looks best in isolation.
+
+- Use existing tokens (`src/index.css`, `src/lib/design-tokens.ts`), components, and spacing — not custom hex, ad-hoc font sizes, or bespoke layouts
+- If the system is close but not perfect, adapt the feature to the system first; only extend the system when the gap is real and recurring
+- One-off polish that breaks consistency is a last resort, not a default
+- New primitives belong in the design system (and its preview page) when they are truly shared — not buried in a single feature file
+
+## Design system simplicity
+
+The design system should be simple enough to hold in your head. Simplify what can be simplified.
+
+- Prefer fewer tokens, variants, and components over exhaustive coverage
+- Before adding to the system, ask: “Can an existing token or component already do this?”
+- Remove or merge rarely used, redundant, or dead tokens, code, and components — do not let the system grow by default
+- If two things differ only slightly, merge them; if something is unused, delete it
+- The goal is a small, memorable set of building blocks — not a catalog of every possible UI state
+
+## When adding a feature
+
+1. Find the closest existing component or pattern
+2. Reuse or extend it within the design system
+3. Extract a new component only if reuse or clarity requires it
+4. Extend the system only when the need is shared — not for a single screen
+5. Simplify or remove something else if the system is getting harder to remember
+6. Verify the result needs no extra explanation to use

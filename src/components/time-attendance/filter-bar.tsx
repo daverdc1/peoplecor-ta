@@ -4,6 +4,8 @@ import { EmployeeSearchField } from "@/components/time-attendance/employee-searc
 import { EmploymentStatusFilter } from "@/components/time-attendance/employment-status-filter";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { EmploymentStatus } from "@/data/employees";
+import { inspectorRegistry } from "@/lib/inspector-registry";
+import { inspectorProps } from "@/lib/inspector";
 import { cn } from "@/lib/utils";
 
 type FilterBarProps = {
@@ -81,7 +83,7 @@ function ViewModeToggle({
       <span
         aria-hidden
         className={cn(
-          "absolute top-1 bottom-1 rounded-[2px] bg-brand shadow-sm",
+          "absolute top-1 bottom-1 rounded-[2px] bg-brand-dark shadow-sm",
           enableTransition && "transition-[left,width] duration-200 ease-out",
         )}
         style={{ left: indicator.left, width: indicator.width }}
@@ -97,11 +99,11 @@ function ViewModeToggle({
         className="relative z-10 h-6 bg-transparent p-0"
       >
         <ToggleGroupItem ref={nameRef} value="name" aria-label="Name view">
-          <MaterialIcon name="person" size={16} />
+          <MaterialIcon name="person" filled size={16} />
           Name
         </ToggleGroupItem>
         <ToggleGroupItem ref={teamRef} value="team" aria-label="Team view">
-          <MaterialIcon name="groups" size={16} />
+          <MaterialIcon name="groups" filled size={16} />
           Team
         </ToggleGroupItem>
       </ToggleGroup>
@@ -118,20 +120,24 @@ export function FilterBar({
   onSearchQueryChange,
 }: FilterBarProps) {
   return (
-    <div className="mt-4 px-6 pb-3">
+    <div className="mt-4 px-6 pb-3" {...inspectorProps(inspectorRegistry.FLT)}>
       <div className="flex h-8 items-center justify-between gap-4">
       <div className="flex items-center gap-2">
-        <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+        <div {...inspectorProps(inspectorRegistry["FLT-VIW"])}>
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+        </div>
 
+        <div {...inspectorProps(inspectorRegistry["FLT-EMP"])}>
         <EmploymentStatusFilter
           employmentStatusFilter={employmentStatusFilter}
           onEmploymentStatusFilterChange={onEmploymentStatusFilterChange}
         />
+        </div>
 
         {employmentStatusFilter.length > 0 ? (
           <button
             type="button"
-            className="text-xs font-normal text-brand hover:underline"
+            className="cursor-pointer text-xs font-normal text-brand hover:underline"
             onClick={() => onEmploymentStatusFilterChange([])}
           >
             Remove filters
@@ -139,10 +145,12 @@ export function FilterBar({
         ) : null}
       </div>
 
-      <EmployeeSearchField
-        onValueChange={onSearchQueryChange}
-        value={searchQuery}
-      />
+      <div {...inspectorProps(inspectorRegistry["FLT-SRH"])}>
+        <EmployeeSearchField
+          onValueChange={onSearchQueryChange}
+          value={searchQuery}
+        />
+      </div>
       </div>
     </div>
   );

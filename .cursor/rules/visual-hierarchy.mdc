@@ -1,0 +1,46 @@
+---
+description: Visual hierarchy, additive emphasis, and restraint with color and type
+alwaysApply: true
+---
+
+# Visual hierarchy & additive design
+
+## Less is more
+
+Color and typography — especially **ALL CAPS** — are loud. Hierarchy is king. If everything yells at once, nothing guides the user.
+
+- Default to quiet: neutral text, normal case, regular weight
+- Reserve bold, color, caps, and large type for what truly needs to stand out
+- One primary focal point per region (row, panel, section) — not three competing heroes
+
+## Additive design
+
+Only add the **least** emphasis needed. Each layer of emphasis makes the whole louder, so add sparingly.
+
+**Workflow:**
+
+1. Start flat — equal, low emphasis across related elements
+2. Identify what must pull forward (primary action, critical status, active selection)
+3. Add emphasis only for those — weight, size, or color, one notch at a time
+4. Stop as soon as hierarchy is clear; do not keep decorating
+
+```tsx
+// ❌ Everything emphasized
+<p className="text-base font-bold uppercase text-brand">Employee Name</p>
+<p className="text-sm font-semibold uppercase text-success">$1,300.00</p>
+
+// ✅ Quiet base, one thing forward
+<p className="text-sm text-ink">Employee Name</p>
+<p className="text-sm font-semibold text-ink">$1,300.00</p>
+```
+
+## Color & type
+
+- **Color**: Meaning over decoration — success/danger/warning for status, brand for primary actions, muted for secondary
+- **Weight**: `font-semibold` or `font-bold` on one line per block, not every line
+- **ALL CAPS**: Inspector and design-system chrome only (`inspector-text`, `ds-heading`) — not body content, labels, or table data
+- **Size**: Prefer one size step between levels (e.g. `text-sm` body, `text-base` title) — avoid stacking large + bold + caps + color
+
+## When reviewing UI
+
+Ask: “What is the single most important thing here?” If two elements fight for attention, dial one back before making the other louder.

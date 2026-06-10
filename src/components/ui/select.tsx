@@ -13,7 +13,7 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between rounded-sm border-2 border-ink bg-white px-2 py-1.5 text-base text-ink focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-9 w-full cursor-pointer items-center justify-between rounded-sm border-2 border-ink bg-white px-2 py-1.5 text-base text-ink focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}
@@ -21,9 +21,9 @@ const SelectTrigger = React.forwardRef<
     {children}
     <SelectPrimitive.Icon asChild>
       <MaterialIcon
-        name="keyboard_arrow_down"
+        name="arrow_drop_down"
         className="text-ink"
-        size={20}
+        size={22}
       />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>

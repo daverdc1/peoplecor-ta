@@ -1,6 +1,17 @@
+export type WageChange = {
+  type: "increase" | "decrease";
+  oldWage: string;
+  newWage: string;
+  delta: string;
+  effectiveOn: string;
+  changedBy: string;
+  changedOn: string;
+};
+
 export type MoneyCell = {
   value: string;
   detail?: string;
+  wageChange?: WageChange;
 };
 
 export type DeductionCell = {
@@ -44,12 +55,13 @@ export type EmployeeRow = {
 export const employees: EmployeeRow[] = [
   {
     id: "1",
-    name: "Guadalupe Martinez",
+    name: "Beatriz Martinez",
     team: "Parlor Team",
     role: "Milker",
     level: "Level 3",
     employmentStatus: "Full Time",
     status: "out",
+    alertCount: 1,
     shift: { value: "$1,300.00", detail: "13 X $100" },
     total: "$1,300.00",
   },
@@ -61,7 +73,19 @@ export const employees: EmployeeRow[] = [
     level: "Level 3",
     employmentStatus: "Seasonal",
     status: "in",
-    reg: { value: "$918.75", detail: "87.5h X $10.50" },
+    reg: {
+      value: "$918.75",
+      detail: "87.5h X $10.50",
+      wageChange: {
+        type: "increase",
+        oldWage: "$10.00/hr",
+        newWage: "$10.50/hr",
+        delta: "+$0.50",
+        effectiveOn: "Jan 31, 2026",
+        changedBy: "Jimmy Johnson",
+        changedOn: "Jan 1, 2026",
+      },
+    },
     total: "$918.75",
     additions: [{ value: "$75.00", label: "Anniversary Bonus" }],
   },
@@ -73,7 +97,6 @@ export const employees: EmployeeRow[] = [
     level: "Level 5",
     employmentStatus: "Part Time",
     status: "out",
-    alertCount: 2,
     shift: { value: "$1,100.00", detail: "11 X $100" },
     total: "$1,100.00",
     payrollDeductions: [{ value: "$9.25", label: "Dental Insurance" }],
@@ -94,14 +117,26 @@ export const employees: EmployeeRow[] = [
   },
   {
     id: "5",
-    name: "Gerald Branham",
+    name: "Teresa Branham",
     team: "Parlor Team",
     role: "Milker",
     level: "Level 2",
     employmentStatus: "Full Time",
     status: "out",
-    alertCount: 2,
-    reg: { value: "$620.00", detail: "62h X $10" },
+    alertCount: 5,
+    reg: {
+      value: "$620.00",
+      detail: "62h X $10",
+      wageChange: {
+        type: "decrease",
+        oldWage: "$10.00/hr",
+        newWage: "$9.00/hr",
+        delta: "-$1.00",
+        effectiveOn: "Jan 31, 2026",
+        changedBy: "Jimmy Johnson",
+        changedOn: "Jan 1, 2026",
+      },
+    },
     total: "$620.00",
   },
   {
@@ -135,7 +170,19 @@ export const employees: EmployeeRow[] = [
     level: "Level 3",
     employmentStatus: "H2A Visa",
     status: "in",
-    reg: { value: "$945.00", detail: "90h X $10.50" },
+    reg: {
+      value: "$945.00",
+      detail: "90h X $10.50",
+      wageChange: {
+        type: "increase",
+        oldWage: "$10.00/hr",
+        newWage: "$10.50/hr",
+        delta: "+$0.50",
+        effectiveOn: "Feb 1, 2026",
+        changedBy: "Maria Lopez",
+        changedOn: "Jan 15, 2026",
+      },
+    },
     total: "$945.00",
     additions: [{ value: "$50.00", label: "Safety Bonus" }],
   },

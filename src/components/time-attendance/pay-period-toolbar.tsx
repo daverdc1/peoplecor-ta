@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { GoToPayrollIcon } from "@/components/icons/go-to-payroll-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import {
   Select,
@@ -8,6 +9,9 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { HoverTooltip } from "@/components/ui/truncated-text";
+import { inspectorRegistry } from "@/lib/inspector-registry";
+import { inspectorProps } from "@/lib/inspector";
 import { cn } from "@/lib/utils";
 
 const payPeriods = [
@@ -25,7 +29,7 @@ const payPeriods = [
 
 function PayPeriodLabel({ range }: { range: string }) {
   return (
-    <span className="inline-flex items-center gap-1">
+    <span className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap">
       <span>Pay Period:</span>
       <span className="font-bold">{range}</span>
     </span>
@@ -51,22 +55,13 @@ function getApprovalProgress(
 
 const approvalProgressStyles = {
   none: {
-    banner: "bg-danger text-white",
-    switch: "data-[state=checked]:bg-danger",
-    switchCheckIcon: "text-danger",
-    toggle: "border-danger bg-danger/10",
+    bar: "bg-danger-dark outline-danger",
   },
   some: {
-    banner: "bg-warning text-white",
-    switch: "data-[state=checked]:bg-warning",
-    switchCheckIcon: "text-[#9a6410]",
-    toggle: "border-warning bg-warning-muted",
+    bar: "bg-warning-dark outline-warning-border",
   },
   all: {
-    banner: "bg-success-dark text-white",
-    switch: "data-[state=checked]:bg-success",
-    switchCheckIcon: "text-success",
-    toggle: "border-success bg-success-muted",
+    bar: "bg-success-dark outline-success",
   },
 } as const;
 
@@ -94,20 +89,28 @@ export function PayPeriodToolbar({
     totalEmployeeCount,
   );
   const progressStyles = approvalProgressStyles[approvalProgress];
+  const pendingApprovalCount = totalEmployeeCount - approvedCount;
+  const goToPayrollTooltipLabel =
+    pendingApprovalCount === 1
+      ? "1 employee still needs approval"
+      : `${pendingApprovalCount} employees still need approval`;
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 px-6 pt-5">
-      <div className="flex flex-wrap items-center gap-3">
+    <div
+      className="flex flex-wrap items-center justify-between gap-4 px-6 pt-5 pb-4"
+      {...inspectorProps(inspectorRegistry.PPT)}
+    >
+      <div className="flex flex-wrap items-center gap-3" {...inspectorProps(inspectorRegistry["PPT-PER"])}>
         <Select
           value={payPeriodId}
           onValueChange={(value) =>
             setPayPeriodId(value as (typeof payPeriods)[number]["id"])
           }
         >
-          <SelectTrigger className="h-9 w-[360px] border-2 transition-colors hover:border-brand hover:bg-brand/5">
+          <SelectTrigger className="h-9 w-auto min-w-[340px] border-2 transition-colors hover:border-brand hover:bg-brand/5">
             <PayPeriodLabel range={selectedPayPeriod.range} />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="min-w-[var(--radix-select-trigger-width)]">
             {payPeriods.map((period) => (
               <SelectItem key={period.id} value={period.id}>
                 <PayPeriodLabel range={period.range} />
@@ -117,7 +120,7 @@ export function PayPeriodToolbar({
         </Select>
 
         <div className="flex items-center gap-2 text-base text-ink">
-          <MaterialIcon name="paid" className="text-success" size={24} />
+          <MaterialIcon name="paid" className="text-success-dark" filled size={24} />
           <span className="inline-flex items-center gap-1">
             <span>Payday</span>
             <span className="font-semibold">{selectedPayPeriod.payday}</span>
@@ -125,44 +128,71 @@ export function PayPeriodToolbar({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {!prepMode ? (
-          <Button
-            className="border-0 bg-warning text-ink hover:bg-warning/90 disabled:bg-surface-muted disabled:text-muted disabled:opacity-100"
-            disabled={!allEmployeesApproved}
-            type="button"
-          >
-            <MaterialIcon name="money_bag" size={16} />
-            Go to Payroll
-          </Button>
-        ) : null}
-        <div className="flex h-8 overflow-hidden rounded-sm">
+      <div className="flex items-center justify-end">
+        <div className="relative shrink-0">
+          {!prepMode ? (
+            <div className="absolute top-1/2 right-full mr-2 -translate-y-1/2">
+              <HoverTooltip
+                disabled={allEmployeesApproved}
+                label={goToPayrollTooltipLabel}
+              >
+                <span className="inline-flex">
+                  <Button
+                    className="gap-1 border-0 px-2 text-xs font-bold uppercase leading-4 text-ink enabled:bg-payroll-yellow enabled:hover:bg-payroll-yellow/90 disabled:bg-surface-muted disabled:text-muted disabled:opacity-100"
+                    disabled={!allEmployeesApproved}
+                    type="button"
+                    {...inspectorProps(inspectorRegistry["PPT-GOP"])}
+                  >
+                    <GoToPayrollIcon />
+                    Go To Payroll
+                  </Button>
+                </span>
+              </HoverTooltip>
+            </div>
+          ) : null}
+
           <div
             className={cn(
-              "flex items-center overflow-hidden text-sm font-semibold whitespace-nowrap",
-              progressStyles.banner,
-              prepMode ? "max-w-72 px-3 opacity-100" : "max-w-0 px-0 opacity-0",
+              "flex items-center rounded-sm",
+              prepMode &&
+                cn("pl-2 outline outline-[6px] outline-offset-0", progressStyles.bar),
             )}
           >
-            {approvedCount}/{totalEmployeeCount} approved
-          </div>
-          <div
-            className={cn(
-              "flex items-center gap-2 border px-3",
-              prepMode
-                ? progressStyles.toggle
-                : "rounded-sm border-border bg-white",
-            )}
-          >
-            <Switch
-              checkIconClassName={prepMode ? progressStyles.switchCheckIcon : undefined}
-              checked={prepMode}
-              className={prepMode ? progressStyles.switch : undefined}
-              onCheckedChange={onPrepModeChange}
-            />
-            <span className="text-xs font-bold uppercase text-ink">
+            {prepMode ? (
+              <div className="mr-4 flex items-center gap-2 whitespace-nowrap">
+                <MaterialIcon
+                  name="groups"
+                  className="shrink-0 text-white"
+                  filled
+                  size={16}
+                />
+                <span className="text-xs font-bold uppercase leading-4 text-white">
+                  {approvedCount}/{totalEmployeeCount} employees approved
+                </span>
+              </div>
+            ) : null}
+
+            <label
+              className={cn(
+                "flex shrink-0 cursor-pointer items-center gap-2 rounded-sm border bg-white p-2",
+                prepMode
+                  ? "border-transparent"
+                  : "border-border transition-colors hover:bg-page",
+              )}
+              htmlFor="prep-for-payroll-toggle"
+              {...inspectorProps(inspectorRegistry["PPT-PREP"])}
+            >
+            <span className="text-xs font-bold uppercase leading-4 text-ink">
               Prep for Payroll
             </span>
+            <Switch
+              checkIconClassName="text-ink"
+              checked={prepMode}
+              className={prepMode ? "data-[state=checked]:bg-ink" : undefined}
+              id="prep-for-payroll-toggle"
+              onCheckedChange={onPrepModeChange}
+            />
+            </label>
           </div>
         </div>
       </div>

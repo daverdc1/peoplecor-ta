@@ -40,7 +40,7 @@ export function TeamSectionHeader({
       </td>
       <td
         className={cn(
-          "bg-page pl-2 pr-8 align-bottom",
+          "bg-page pl-2 pr-2 align-bottom",
           sectionSpacing,
         )}
       >

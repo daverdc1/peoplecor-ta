@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
 
-export function PeopleCorLogo({ className }: { className?: string }) {
+type PeopleCorLogoProps = {
+  className?: string;
+  variant?: "default" | "ink";
+};
+
+export function PeopleCorLogo({ className, variant = "default" }: PeopleCorLogoProps) {
+  const isInk = variant === "ink";
+
   return (
     <div
       aria-label="PeopleCor"
@@ -9,12 +16,14 @@ export function PeopleCorLogo({ className }: { className?: string }) {
       <img
         alt=""
         className="h-[26px] w-[31.2px] shrink-0"
-        src="/peoplecor-logo-mark.svg"
+        src={isInk ? "/peoplecor-logo-mark-ink.svg" : "/peoplecor-logo-mark.svg"}
       />
       <img
         alt=""
         className="ml-[5px] h-[20.904px] w-[130.936px] shrink-0"
-        src="/peoplecor-logo-wordmark.svg"
+        src={
+          isInk ? "/peoplecor-logo-wordmark-ink.svg" : "/peoplecor-logo-wordmark.svg"
+        }
       />
     </div>
   );

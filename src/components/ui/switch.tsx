@@ -13,7 +13,7 @@ const Switch = React.forwardRef<
 >(({ checkIconClassName, className, ...props }, ref) => (
   <SwitchPrimitive.Root
     className={cn(
-      "peer inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent bg-border-input transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-success data-[state=unchecked]:bg-border-input",
+      "peer inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent bg-border-input transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-success-dark data-[state=unchecked]:bg-border-input",
       className,
     )}
     {...props}
@@ -21,7 +21,7 @@ const Switch = React.forwardRef<
   >
     <SwitchPrimitive.Thumb
       className={cn(
-        "pointer-events-none flex size-3 items-center justify-center rounded-full bg-white shadow-sm ring-0 transition-transform data-[state=checked]:translate-x-3 data-[state=unchecked]:translate-x-0",
+        "pointer-events-none flex size-3 items-center justify-center rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out data-[state=checked]:translate-x-3 data-[state=unchecked]:translate-x-0",
         "[&_[data-slot=check-icon]]:hidden [&_[data-slot=close-icon]]:hidden",
         "data-[state=checked]:[&_[data-slot=check-icon]]:flex",
         "data-[state=unchecked]:[&_[data-slot=close-icon]]:flex",
@@ -30,7 +30,7 @@ const Switch = React.forwardRef<
       <span data-slot="check-icon" className="items-center justify-center">
         <MaterialIcon
           name="check"
-          className={cn("text-success", checkIconClassName)}
+          className={cn("text-success-dark", checkIconClassName)}
           size={8}
           weight={700}
         />

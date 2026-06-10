@@ -6,116 +6,37 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { EmployeeAlertIcon } from "@/components/icons/employee-alert-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  HoverTooltip,
-  TruncatedButton,
-  TruncatedInline,
-  TruncatedText,
-} from "@/components/ui/truncated-text";
+import { HoverTooltip, TruncatedButton, TruncatedInline } from "@/components/ui/truncated-text";
 import { EmployeeApprovalPill } from "@/components/time-attendance/employee-approval-pill";
 import { EmployeeActionsMenu } from "@/components/time-attendance/employee-actions-menu";
+import {
+  DeductionList,
+  MoneyValue,
+  TableCellCenter,
+} from "@/components/time-attendance/employee-table-cells";
 import { EmployeeSearchEmptyState } from "@/components/time-attendance/employee-search-empty-state";
 import { TeamSectionHeader } from "@/components/time-attendance/team-section";
 import { groupEmployeesByTeam } from "@/lib/group-employees-by-team";
 import {
   employees,
   type ApprovalStatus,
-  type DeductionCell,
   type EmployeeRow,
   type EmploymentStatus,
-  type MoneyCell,
 } from "@/data/employees";
 import { filterEmployees } from "@/lib/filter-employees";
+import { getInspectorEntryForRow, inspectorRegistry } from "@/lib/inspector-registry";
+import { inspectorProps } from "@/lib/inspector";
 import { cn } from "@/lib/utils";
-
-function MoneyValue({ cell }: { cell?: MoneyCell }) {
-  if (!cell) {
-    return <span className="text-sm text-muted">--</span>;
-  }
-
-  return (
-    <div className="mx-auto w-full min-w-0 text-center">
-      <p className="m-0 text-sm leading-5 text-ink">{cell.value}</p>
-      {cell.detail ? (
-        <TruncatedText className="text-[10.5px] leading-3 text-muted">
-          {cell.detail}
-        </TruncatedText>
-      ) : null}
-    </div>
-  );
-}
-
-function RecurringIcon() {
-  return (
-    <HoverTooltip label="Recurring">
-      <span aria-label="Recurring" className="inline-flex shrink-0">
-        <MaterialIcon
-          name="autorenew"
-          className="text-muted transition-colors hover:text-ink"
-          size={12}
-        />
-      </span>
-    </HoverTooltip>
-  );
-}
-
-function DeductionValue({
-  item,
-  tone,
-}: {
-  item: DeductionCell;
-  tone: "success" | "danger";
-}) {
-  const showRecurring = item.recurring ?? true;
-
-  return (
-    <div className="mx-auto w-full min-w-0 text-center">
-      <span className="inline-flex max-w-full items-center justify-center gap-1">
-        <p
-          className={cn(
-            "m-0 text-sm leading-5 font-semibold",
-            tone === "success" ? "text-success-dark" : "text-danger",
-          )}
-        >
-          {item.value}
-        </p>
-        {showRecurring ? <RecurringIcon /> : null}
-      </span>
-      <TruncatedText className="text-[10.5px] leading-3 text-muted">
-        {item.label}
-      </TruncatedText>
-    </div>
-  );
-}
-
-function DeductionList({
-  items,
-  tone,
-}: {
-  items?: DeductionCell[];
-  tone: "success" | "danger";
-}) {
-  if (!items?.length) {
-    return <span className="text-sm text-muted">--</span>;
-  }
-
-  return (
-    <div>
-      {items.map((item) => (
-        <DeductionValue key={`${item.label}-${item.value}`} item={item} tone={tone} />
-      ))}
-    </div>
-  );
-}
 
 function StatusIndicator({ employee }: { employee: EmployeeRow }) {
   return (
     <span
       className={cn(
         "inline-block size-[6px] shrink-0 rounded-full",
-        employee.status === "in" ? "bg-success" : "bg-warning",
+        employee.status === "in" ? "bg-success-dark" : "bg-warning-dark",
       )}
     />
   );
@@ -126,7 +47,7 @@ function EmployeeCell({ employee }: { employee: EmployeeRow }) {
     <div className="min-w-0">
       <div className="flex min-w-0 items-center gap-2">
         <StatusIndicator employee={employee} />
-        <TruncatedButton className="w-full text-left text-sm leading-5 font-semibold text-brand hover:underline">
+        <TruncatedButton className="w-full cursor-pointer text-left text-sm leading-5 font-semibold text-brand hover:underline">
           {employee.name}
         </TruncatedButton>
       </div>
@@ -154,7 +75,8 @@ type SortKey =
   | "additions"
   | "payrollDeductions"
   | "companyDeductions"
-  | "loans";
+  | "loans"
+  | "approvalStatus";
 
 type SortState = {
   key: SortKey;
@@ -188,14 +110,32 @@ function parseMoney(value?: string): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function getSortValue(employee: EmployeeRow, key: SortKey): string | number | null {
+function getEmployeeAlertCount(
+  employee: EmployeeRow,
+  resolvedAlertIds: Set<string>,
+) {
+  if (resolvedAlertIds.has(employee.id)) {
+    return 0;
+  }
+
+  return employee.alertCount ?? 0;
+}
+
+function getSortValue(
+  employee: EmployeeRow,
+  key: SortKey,
+  approvalById: Record<string, ApprovalStatus>,
+  resolvedAlertIds: Set<string>,
+): string | number | null {
   switch (key) {
     case "firstName":
       return getNameParts(employee.name).first;
     case "lastName":
       return getNameParts(employee.name).last;
     case "alertCount":
-      return employee.alertCount ?? 0;
+      return getEmployeeAlertCount(employee, resolvedAlertIds);
+    case "approvalStatus":
+      return approvalById[employee.id] ?? "pending";
     case "shift":
     case "reg":
     case "pm":
@@ -221,9 +161,15 @@ function getSortValue(employee: EmployeeRow, key: SortKey): string | number | nu
   }
 }
 
-function compareEmployees(a: EmployeeRow, b: EmployeeRow, sort: SortState): number {
-  const valueA = getSortValue(a, sort.key);
-  const valueB = getSortValue(b, sort.key);
+function compareEmployees(
+  a: EmployeeRow,
+  b: EmployeeRow,
+  sort: SortState,
+  approvalById: Record<string, ApprovalStatus>,
+  resolvedAlertIds: Set<string>,
+): number {
+  const valueA = getSortValue(a, sort.key, approvalById, resolvedAlertIds);
+  const valueB = getSortValue(b, sort.key, approvalById, resolvedAlertIds);
   const direction = sort.direction === "asc" ? 1 : -1;
 
   if (typeof valueA === "string" && typeof valueB === "string") {
@@ -275,7 +221,7 @@ function SortableHeader({
       }
       onClick={() => onSort(sortKey)}
       className={cn(
-        "group relative inline-block rounded-sm uppercase hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+        "group relative inline-block cursor-pointer rounded-sm uppercase hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
         isActive ? "text-ink" : "text-subtle",
       )}
     >
@@ -289,19 +235,36 @@ function SortableHeader({
       >
         {isActive && direction === "desc" ? (
           <MaterialIcon
-            name="keyboard_arrow_down"
+            name="arrow_drop_down"
             className="text-ink"
-            size={14}
+            size={16}
           />
         ) : (
           <MaterialIcon
-            name="keyboard_arrow_up"
+            name="arrow_drop_up"
             className={isActive ? "text-ink" : "text-label"}
-            size={14}
+            size={16}
           />
         )}
       </span>
     </button>
+  );
+}
+
+function StatusColumnLayout({
+  children,
+  trailing,
+  gap = "gap-1",
+}: {
+  children: ReactNode;
+  trailing: ReactNode;
+  gap?: "gap-1" | "gap-3";
+}) {
+  return (
+    <div className={cn("flex items-center", gap)}>
+      <div className="flex min-w-0 flex-1 justify-center">{children}</div>
+      <div className="size-8 shrink-0">{trailing}</div>
+    </div>
   );
 }
 
@@ -314,15 +277,15 @@ const tdNameCell =
 function rowCellBg(isSelected: boolean, side: "left" | "right") {
   if (isSelected) {
     return side === "left"
-      ? "bg-row-selected-left transition-colors duration-300 ease-in-out group-hover:bg-row-selected-left"
-      : "bg-row-selected-right transition-colors duration-300 ease-in-out group-hover:bg-row-selected-right";
+      ? "bg-row-selected-left group-hover:bg-row-selected-left"
+      : "bg-row-selected-right group-hover:bg-row-selected-right";
   }
 
-  return cn(
-    "transition-colors duration-300 ease-in-out",
-    side === "left" ? "bg-page" : "bg-white",
-    side === "left" ? "group-hover:bg-row-hover-left" : "group-hover:bg-row-hover-right",
-  );
+  if (side === "left") {
+    return "bg-page group-hover:bg-row-hover-left";
+  }
+
+  return "bg-white group-hover:bg-row-hover-right";
 }
 
 const adjustmentColumns = [
@@ -340,9 +303,11 @@ const adjustmentColumns = [
   { key: "loans" as const, label: "Loans", tone: "danger" as const },
 ];
 
-const FIXED_COL_PX = 40;
+const CHECKBOX_COL_PX = 40;
+const ALERTS_COL_PX = 48;
 const ACTIONS_COL_PX = 132;
-const NAME_FLEX_WEIGHT = 0.35;
+const NAME_FLEX_WEIGHT = 0.28;
+const NAME_COLUMN_UNITS_OFF = 3;
 const HOUR_FLEX_WEIGHT = 0.1;
 const TOTAL_FLEX_WEIGHT = 0.15;
 const DEFAULT_LEFT_RATIO = 0.58;
@@ -372,22 +337,37 @@ function getColumnWidths(
   );
   const leftSectionPx = tableWidth * effectiveLeftRatio;
   const rightSectionPx = Math.max(0, tableWidth - leftSectionPx);
-  const leftFlexPx = Math.max(0, leftSectionPx - FIXED_COL_PX * 2);
+  const leftFlexPx = Math.max(0, leftSectionPx - CHECKBOX_COL_PX - ALERTS_COL_PX);
   const rightFlexPx = Math.max(0, rightSectionPx - ACTIONS_COL_PX);
+
+  if (!prepMode) {
+    const hourTotalColumnCount = hourColumns.length + 1;
+    const totalUnits = NAME_COLUMN_UNITS_OFF + hourTotalColumnCount;
+    const unitWidth = totalUnits > 0 ? leftFlexPx / totalUnits : 0;
+
+    return {
+      checkbox: `${CHECKBOX_COL_PX}px`,
+      name: `${unitWidth * NAME_COLUMN_UNITS_OFF}px`,
+      alerts: `${ALERTS_COL_PX}px`,
+      hour: `${unitWidth}px`,
+      total: `${unitWidth}px`,
+      adjustment: "0px",
+      actions: `${ACTIONS_COL_PX}px`,
+    };
+  }
+
   const flexWeight =
     NAME_FLEX_WEIGHT +
     HOUR_FLEX_WEIGHT * hourColumns.length +
     TOTAL_FLEX_WEIGHT;
 
   return {
-    checkbox: `${FIXED_COL_PX}px`,
+    checkbox: `${CHECKBOX_COL_PX}px`,
     name: `${leftFlexPx * (NAME_FLEX_WEIGHT / flexWeight)}px`,
-    alerts: `${FIXED_COL_PX}px`,
+    alerts: `${ALERTS_COL_PX}px`,
     hour: `${leftFlexPx * (HOUR_FLEX_WEIGHT / flexWeight)}px`,
     total: `${leftFlexPx * (TOTAL_FLEX_WEIGHT / flexWeight)}px`,
-    adjustment: prepMode
-      ? `${rightFlexPx / adjustmentColumns.length}px`
-      : "0px",
+    adjustment: `${rightFlexPx / adjustmentColumns.length}px`,
     actions: `${ACTIONS_COL_PX}px`,
   };
 }
@@ -423,10 +403,12 @@ type EmployeeTableProps = {
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
   approvalById: Record<string, ApprovalStatus>;
+  onResolveAlert: (employeeId: string) => void;
   onSetEmployeeApproval: (
     employeeId: string,
     status: ApprovalStatus,
   ) => void;
+  resolvedAlertIds: Set<string>;
   viewMode: "name" | "team";
 };
 
@@ -438,7 +420,9 @@ export function EmployeeTable({
   searchQuery,
   onSearchQueryChange,
   approvalById,
+  onResolveAlert,
   onSetEmployeeApproval,
+  resolvedAlertIds,
   viewMode,
 }: EmployeeTableProps) {
   const [sort, setSort] = useState<SortState>({
@@ -449,6 +433,20 @@ export function EmployeeTable({
   const [isResizing, setIsResizing] = useState(false);
   const [tableWidth, setTableWidth] = useState(0);
   const tableWrapperRef = useRef<HTMLDivElement>(null);
+  const rowNumberByEmployeeId = useMemo(() => {
+    const byFirstName = [...employees].sort((a, b) =>
+      compareEmployees(
+        a,
+        b,
+        { key: "firstName", direction: "asc" },
+        approvalById,
+        resolvedAlertIds,
+      ),
+    );
+
+    return new Map(byFirstName.map((employee, index) => [employee.id, index + 1]));
+  }, [approvalById, resolvedAlertIds]);
+
   const sortedEmployees = useMemo(() => {
     const filtered = filterEmployees(
       employees,
@@ -456,8 +454,10 @@ export function EmployeeTable({
       searchQuery,
     );
 
-    return [...filtered].sort((a, b) => compareEmployees(a, b, sort));
-  }, [employmentStatusFilter, searchQuery, sort]);
+    return [...filtered].sort((a, b) =>
+      compareEmployees(a, b, sort, approvalById, resolvedAlertIds),
+    );
+  }, [approvalById, employmentStatusFilter, resolvedAlertIds, searchQuery, sort]);
   const teamGroups = useMemo(
     () => groupEmployeesByTeam(sortedEmployees),
     [sortedEmployees],
@@ -511,27 +511,35 @@ export function EmployeeTable({
     const isSelected = selectedIds.has(employee.id);
 
     return (
-      <tr key={employee.id} className="group relative hover:z-20 focus-within:z-20">
+      <tr
+        key={employee.id}
+        className="group relative hover:z-20 focus-within:z-20"
+        {...inspectorProps(
+          getInspectorEntryForRow(rowNumberByEmployeeId.get(employee.id) ?? 0),
+        )}
+      >
         <td
           className={cn(
             tdCell,
-            "w-10 max-w-10 pl-3 pr-0 text-left",
+            "flex w-10 max-w-10 items-center pl-3 pr-0",
             rowCellBg(isSelected, "left"),
             isLastRow && "rounded-bl-[8px]",
           )}
         >
-          <Checkbox
-            aria-label={`Select ${employee.name}`}
-            checked={isSelected}
-            onCheckedChange={(checked) =>
-              toggleRow(employee.id, checked === true)
-            }
-          />
+          <span {...inspectorProps(inspectorRegistry["TBL-CHK"])}>
+            <Checkbox
+              aria-label={`Select ${employee.name}`}
+              checked={isSelected}
+              onCheckedChange={(checked) =>
+                toggleRow(employee.id, checked === true)
+              }
+            />
+          </span>
         </td>
         <td
           className={cn(
             tdNameCell,
-            "pl-2 pr-8",
+            "pl-1 pr-2",
             rowCellBg(isSelected, "left"),
           )}
         >
@@ -539,47 +547,52 @@ export function EmployeeTable({
         </td>
         <td
           className={cn(
-            "w-10 max-w-10 pl-2 pr-1",
+            "w-12 max-w-12 px-3",
             tdCell,
             "text-center",
             rowCellBg(isSelected, "left"),
           )}
+          {...inspectorProps(inspectorRegistry["TBL-ALR"])}
         >
-          {employee.alertCount ? (
-            <div className="inline-flex flex-col items-center">
-              <MaterialIcon
-                name="warning"
-                className="text-danger"
-                filled
-                size={16}
-              />
-              <span className="text-xs text-danger">
-                {employee.alertCount}
-              </span>
-            </div>
+          {getEmployeeAlertCount(employee, resolvedAlertIds) > 0 ? (
+            <HoverTooltip label="On-going shift">
+              <button
+                {...inspectorProps(inspectorRegistry["TBL-TIP-ALR"])}
+                type="button"
+                aria-label={`Resolve alert for ${employee.name}`}
+                className="inline-flex cursor-pointer flex-col items-center"
+                onClick={() => onResolveAlert(employee.id)}
+              >
+                <span className="text-xs font-semibold text-danger-text">
+                  {employee.alertCount}
+                </span>
+                <EmployeeAlertIcon className="text-danger-text" />
+              </button>
+            </HoverTooltip>
           ) : null}
         </td>
         {hourColumns.map((col) => (
           <td
             key={col.key}
-            className={cn(
-              tdCell,
-              "text-center",
-              rowCellBg(isSelected, "left"),
-            )}
+            className={cn(tdCell, rowCellBg(isSelected, "left"))}
           >
-            <MoneyValue cell={employee[col.key]} />
+            <TableCellCenter>
+              <MoneyValue cell={employee[col.key]} />
+            </TableCellCenter>
           </td>
         ))}
         <td
           className={cn(
             tdCell,
-            "text-center",
             rowCellBg(isSelected, "left"),
             prepMode && isLastRow && "rounded-br-[8px]",
           )}
         >
-          <p className="text-sm font-semibold text-ink">{employee.total}</p>
+          <TableCellCenter>
+            <p className="m-0 whitespace-nowrap text-sm font-semibold text-ink">
+              {employee.total}
+            </p>
+          </TableCellCenter>
         </td>
         {adjustmentColumns.map((col) => (
           <td
@@ -594,24 +607,33 @@ export function EmployeeTable({
         ))}
         <td
           className={cn(
-            "min-w-[132px] px-2",
             tdCell,
+            "min-w-[132px] pr-2",
+            "text-center",
             rowCellBg(isSelected, prepMode ? "right" : "left"),
             !prepMode && isLastRow && "rounded-br-[8px]",
           )}
+          {...inspectorProps(inspectorRegistry["TBL-STS"])}
         >
-          <div className="flex items-center justify-end gap-2">
+          <StatusColumnLayout
+            gap="gap-3"
+            trailing={
+              <EmployeeActionsMenu
+                approvalStatus={approvalById[employee.id] ?? "pending"}
+                employeeName={employee.name}
+                hasAlerts={getEmployeeAlertCount(employee, resolvedAlertIds) > 0}
+                onApprove={() => onSetEmployeeApproval(employee.id, "approved")}
+                onUnapprove={() =>
+                  onSetEmployeeApproval(employee.id, "pending")
+                }
+                prepMode={prepMode}
+              />
+            }
+          >
             <EmployeeApprovalPill
               status={approvalById[employee.id] ?? "pending"}
             />
-            <EmployeeActionsMenu
-              approvalStatus={approvalById[employee.id] ?? "pending"}
-              employeeName={employee.name}
-              onApprove={() => onSetEmployeeApproval(employee.id, "approved")}
-              onUnapprove={() => onSetEmployeeApproval(employee.id, "pending")}
-              prepMode={prepMode}
-            />
-          </div>
+          </StatusColumnLayout>
         </td>
       </tr>
     );
@@ -721,7 +743,7 @@ export function EmployeeTable({
   }
 
   return (
-    <div className="mx-6 overflow-x-auto">
+    <div className="mx-6 overflow-x-auto" {...inspectorProps(inspectorRegistry.TBL)}>
       <div
         ref={tableWrapperRef}
         className={cn(
@@ -769,22 +791,24 @@ export function EmployeeTable({
             ))}
             <col style={{ width: columnWidths.actions }} />
           </colgroup>
-        <thead>
+        <thead {...inspectorProps(inspectorRegistry["TBL-HDR"])}>
           <tr className="text-xs font-bold uppercase text-subtle">
             <th
               className={cn(
-                "w-10 max-w-10 rounded-tl-[8px] pl-3 pr-0 text-left",
+                "flex w-10 max-w-10 items-center rounded-tl-[8px] pl-3 pr-0",
                 thCell,
                 "bg-page",
               )}
             >
-              <Checkbox
-                aria-label="Select all employees"
-                checked={allSelected ? true : someSelected ? "indeterminate" : false}
-                onCheckedChange={toggleAll}
-              />
+              <span {...inspectorProps(inspectorRegistry["TBL-CHK-ALL"])}>
+                <Checkbox
+                  aria-label="Select all employees"
+                  checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                  onCheckedChange={toggleAll}
+                />
+              </span>
             </th>
-            <th className={cn(thCell, "overflow-visible bg-page pl-2 pr-8 text-left")}>
+            <th className={cn(thCell, "overflow-visible bg-page pl-1 pr-2 text-left")}>
               <span className="inline-flex items-center gap-2">
                 <span className="mr-4">
                   <SortableHeader
@@ -802,14 +826,14 @@ export function EmployeeTable({
                 />
               </span>
             </th>
-            <th className={cn("w-10 max-w-10 overflow-visible bg-page pl-2 pr-1", thCell)}>
+            <th className={cn("w-12 max-w-12 overflow-visible bg-page px-3", thCell)}>
               <div className="text-center">
                 <SortableHeader
                   ariaLabel="Alerts"
                   label={
                     <MaterialIcon
                       name="warning"
-                      className="text-danger"
+                      className="text-danger-text"
                       filled
                       size={16}
                     />
@@ -859,11 +883,23 @@ export function EmployeeTable({
             ))}
             <th
               className={cn(
-                "min-w-[132px] px-2",
                 thCell,
+                "min-w-[132px] pr-2",
                 prepMode ? "bg-white" : "rounded-tr-[8px] bg-page",
               )}
-            />
+            >
+              <StatusColumnLayout
+                gap="gap-3"
+                trailing={<span aria-hidden="true" />}
+              >
+                <SortableHeader
+                  label="Status"
+                  onSort={handleSort}
+                  sort={sort}
+                  sortKey="approvalStatus"
+                />
+              </StatusColumnLayout>
+            </th>
           </tr>
         </thead>
         <tbody>

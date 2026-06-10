@@ -66,7 +66,7 @@ export function EmployeeSearchField({
         <button
           type="button"
           aria-label="Clear search"
-          className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full text-muted transition-colors hover:text-ink"
+          className="absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded-full text-muted transition-colors hover:text-ink"
           onMouseDown={(event) => event.preventDefault()}
           onClick={clearSearch}
         >
