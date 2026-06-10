@@ -159,7 +159,7 @@ export function AppHeader() {
                   <DropdownMenuItem
                     key={item.label}
                     className={cn(
-                      item.active && "bg-brand/10 font-semibold text-brand",
+                      item.active && "bg-brand-muted-on-white font-semibold text-brand",
                     )}
                   >
                     {item.label}

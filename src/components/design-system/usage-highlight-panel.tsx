@@ -82,7 +82,7 @@ export function UsageHighlightPanel({
       className="fixed z-[90] w-[300px] rounded-sm border border-brand/30 bg-white shadow-xl"
       style={{ left: position.x, top: position.y }}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-brand/5 px-3 py-2">
+      <div className="flex items-center justify-between gap-2 border-b border-border bg-brand-subtle px-3 py-2">
         <div
           className={cn(
             "flex min-w-0 flex-1 cursor-grab items-center gap-2 active:cursor-grabbing",
@@ -101,7 +101,7 @@ export function UsageHighlightPanel({
         <button
           type="button"
           aria-label="Dismiss"
-          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-subtle hover:bg-brand/10 hover:text-ink"
+          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-sm text-subtle hover:bg-brand-muted-on-white hover:text-ink"
           onClick={(event) => {
             event.stopPropagation();
             onDismiss();
@@ -120,7 +120,7 @@ export function UsageHighlightPanel({
 
         <button
           type="button"
-          className="mt-4 w-full cursor-pointer rounded-sm border border-brand px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/5"
+          className="mt-4 w-full cursor-pointer rounded-sm border border-brand px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand-subtle"
           onClick={onOpenDesignSystem}
         >
           Back to Design System

@@ -107,7 +107,7 @@ export function PayPeriodToolbar({
             setPayPeriodId(value as (typeof payPeriods)[number]["id"])
           }
         >
-          <SelectTrigger className="h-9 w-auto min-w-[340px] border-2 transition-colors hover:border-brand hover:bg-brand/5">
+          <SelectTrigger className="h-9 w-auto min-w-[340px] border-2 transition-colors hover:border-brand hover:bg-brand-subtle">
             <PayPeriodLabel range={selectedPayPeriod.range} />
           </SelectTrigger>
           <SelectContent className="min-w-[var(--radix-select-trigger-width)]">

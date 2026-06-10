@@ -43,7 +43,7 @@ function ActivityDot({ color }: { color: "green" | "orange" }) {
       <span
         className={cn(
           "size-2.5 rounded-full",
-          color === "green" ? "bg-success" : "bg-[#eb925b]",
+          color === "green" ? "bg-success" : "bg-warning-border",
         )}
       />
     </span>

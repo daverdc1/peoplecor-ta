@@ -12,7 +12,7 @@ const buttonVariants = cva(
         outline:
           "border border-white bg-transparent text-white hover:bg-white/10",
         brandOutline:
-          "border border-brand bg-white text-brand hover:bg-brand/5",
+          "border border-brand bg-white text-brand hover:bg-brand-subtle",
         ghost: "bg-transparent hover:bg-surface-muted",
         success:
           "border border-success bg-success-muted text-ink hover:bg-success/15",

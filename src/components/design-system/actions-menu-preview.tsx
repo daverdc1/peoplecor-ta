@@ -249,7 +249,7 @@ export function ActionsMenuPreview({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem className="text-danger-text focus:bg-danger/5 focus:text-danger-text data-[highlighted]:bg-danger/5 data-[highlighted]:text-danger-text">
+        <DropdownMenuItem className="text-danger-text focus:bg-danger-subtle focus:text-danger-text data-[highlighted]:bg-danger-subtle data-[highlighted]:text-danger-text">
           <MaterialIcon name="close" className="text-danger-text" size={14} />
           Delete timesheet
         </DropdownMenuItem>

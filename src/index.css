@@ -12,6 +12,7 @@
   --color-page: #f1f5f8;
   --color-ds-surface: color-mix(in srgb, var(--color-page) 50%, white);
   --color-surface-muted: #e7ecf0;
+  --color-surface-muted-hover: color-mix(in srgb, var(--color-ink) 5%, var(--color-surface-muted));
   --color-border: #d5dce2;
   --color-border-input: #acb4ba;
   --color-stats: #3d505f;
@@ -21,6 +22,9 @@
   /* Brand */
   --color-brand: #0eb1e6;
   --color-brand-dark: #0097cb;
+  --color-brand-subtle: color-mix(in srgb, var(--color-brand) 5%, white);
+  --color-brand-muted: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
+  --color-brand-muted-on-white: color-mix(in srgb, var(--color-brand) 10%, white);
   --color-nav-hover: color-mix(in srgb, var(--color-brand-dark) 50%, var(--color-brand));
 
   /* Success */
@@ -41,16 +45,17 @@
   --color-danger: #e95156;
   --color-danger-dark: #e05252;
   --color-danger-text: #b83237;
+  --color-danger-subtle: color-mix(in srgb, var(--color-danger) 5%, white);
 
   /* Payroll */
   --color-payroll-yellow: #ffc600;
 
   /* Table */
   --color-row-hover-left: color-mix(in srgb, var(--color-ink) 2.5%, var(--color-page));
-  --color-row-hover-right: color-mix(in srgb, var(--color-ink) 2.5%, #ffffff);
-  --color-row-selected: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
-  --color-row-selected-left: var(--color-row-selected);
-  --color-row-selected-right: color-mix(in srgb, var(--color-brand) 10%, #ffffff);
+  --color-row-hover-right: color-mix(in srgb, var(--color-ink) 2.5%, white);
+  --color-row-selected: var(--color-brand-muted);
+  --color-row-selected-left: var(--color-brand-muted);
+  --color-row-selected-right: var(--color-brand-muted-on-white);
 
   /* Inspector */
   --color-inspector: #8a38f5;

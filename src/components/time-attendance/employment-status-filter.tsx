@@ -53,7 +53,7 @@ export function EmploymentStatusFilter({
             "flex h-8 cursor-pointer items-center gap-0.5 rounded-sm border px-2 text-xs font-bold uppercase transition-colors",
             isFilterActive
               ? "border-brand bg-row-selected text-ink hover:bg-row-selected"
-              : "border-transparent bg-surface-muted text-ink hover:bg-[#dde4e9]",
+              : "border-transparent bg-surface-muted text-ink hover:bg-surface-muted-hover",
           )}
         >
           {isFilterActive
