@@ -9,11 +9,11 @@ import { PayPeriodToolbar } from "@/components/time-attendance/pay-period-toolba
 import { SelectionBar } from "@/components/time-attendance/selection-bar";
 import { Toast, type ToastAction } from "@/components/ui/toast";
 import {
-  employees,
+  getEmployeesForPayPeriod,
   type ApprovalStatus,
   type EmploymentStatus,
 } from "@/data/employees";
-import { filterEmployees } from "@/lib/filter-employees";
+import { payPeriods, type PayPeriodId } from "@/data/pay-periods";
 import { inspectorRegistry } from "@/lib/inspector-registry";
 import { inspectorProps } from "@/lib/inspector";
 
@@ -81,9 +81,20 @@ export function TimeAttendancePage({
   >([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [prepMode, setPrepMode] = useState(true);
+  const [payPeriodId, setPayPeriodId] = useState<PayPeriodId>("june-1-15");
   const [searchQuery, setSearchQuery] = useState("");
+  const employees = useMemo(
+    () => getEmployeesForPayPeriod(payPeriodId),
+    [payPeriodId],
+  );
   const [approvalById, setApprovalById] = useState<Record<string, ApprovalStatus>>(
-    () => Object.fromEntries(employees.map((employee) => [employee.id, "pending"])),
+    () =>
+      Object.fromEntries(
+        getEmployeesForPayPeriod("june-1-15").map((employee) => [
+          employee.id,
+          "pending",
+        ]),
+      ),
   );
   const [resolvedAlertIds, setResolvedAlertIds] = useState<Set<string>>(
     new Set(),
@@ -92,6 +103,7 @@ export function TimeAttendancePage({
     action: ToastAction;
     id: number;
     message: string;
+    onUndo?: () => void;
   } | null>(null);
 
   const employeeHasAlerts = (employeeId: string) => {
@@ -116,26 +128,40 @@ export function TimeAttendancePage({
     });
   };
 
-  const visibleEmployees = useMemo(
-    () => filterEmployees(employees, employmentStatusFilter, searchQuery),
-    [employmentStatusFilter, searchQuery],
-  );
   const approvedCount = useMemo(
     () =>
-      visibleEmployees.filter(
+      employees.filter(
         (employee) => approvalById[employee.id] === "approved",
       ).length,
-    [approvalById, visibleEmployees],
+    [approvalById, employees],
   );
-  const totalEmployeeCount = visibleEmployees.length;
+
+  const handlePayPeriodChange = (nextPayPeriodId: PayPeriodId) => {
+    setPayPeriodId(nextPayPeriodId);
+    const nextEmployees = getEmployeesForPayPeriod(nextPayPeriodId);
+    setApprovalById(
+      Object.fromEntries(nextEmployees.map((employee) => [employee.id, "pending"])),
+    );
+    setSelectedIds(new Set());
+    setResolvedAlertIds(new Set());
+  };
+  const totalEmployeeCount = employees.length;
   const allEmployeesApproved =
     totalEmployeeCount > 0 && approvedCount === totalEmployeeCount;
+  const payPeriodRange =
+    payPeriods.find((period) => period.id === payPeriodId)?.range ??
+    payPeriods[0].range;
 
-  const showToast = (action: ToastAction, message: string) => {
+  const showToast = (
+    action: ToastAction,
+    message: string,
+    onUndo?: () => void,
+  ) => {
     setToast({
       action,
       id: Date.now(),
       message,
+      onUndo: action === "approved" ? onUndo : undefined,
     });
   };
 
@@ -143,11 +169,26 @@ export function TimeAttendancePage({
     count: number,
     status: ApprovalStatus,
     employeeName?: string,
+    onUndo?: () => void,
   ) => {
     showToast(
       status === "approved" ? "approved" : "unapproved",
       getApprovalToastMessage(count, status, employeeName),
+      onUndo,
     );
+  };
+
+  const revertEmployeeApprovals = (
+    employeeIds: string[],
+    previousStatuses: Record<string, ApprovalStatus>,
+  ) => {
+    setApprovalById((current) => {
+      const next = { ...current };
+      for (const employeeId of employeeIds) {
+        next[employeeId] = previousStatuses[employeeId] ?? "pending";
+      }
+      return next;
+    });
   };
 
   const setEmployeeApproval = (
@@ -162,6 +203,8 @@ export function TimeAttendancePage({
       return;
     }
 
+    const previousStatus = approvalById[employeeId] ?? "pending";
+
     setApprovalById((current) => ({
       ...current,
       [employeeId]: status,
@@ -169,7 +212,14 @@ export function TimeAttendancePage({
     const employeeName = employees.find(
       (employee) => employee.id === employeeId,
     )?.name;
-    showApprovalToast(1, status, employeeName);
+    showApprovalToast(
+      1,
+      status,
+      employeeName,
+      status === "approved"
+        ? () => revertEmployeeApprovals([employeeId], { [employeeId]: previousStatus })
+        : undefined,
+    );
   };
 
   const setSelectedApproval = (status: ApprovalStatus) => {
@@ -219,6 +269,15 @@ export function TimeAttendancePage({
       return;
     }
 
+    const previousStatuses = Object.fromEntries(
+      approvableIds.map((employeeId) => [
+        employeeId,
+        approvalById[employeeId] ?? "pending",
+      ]),
+    );
+    const undoApproval = () =>
+      revertEmployeeApprovals(approvableIds, previousStatuses);
+
     if (approvableIds.length > 0) {
       setApprovalById((current) => {
         const next = { ...current };
@@ -236,6 +295,7 @@ export function TimeAttendancePage({
           approvableIds.length,
           blockedByAlertIds.length,
         ),
+        undoApproval,
       );
       return;
     }
@@ -245,7 +305,12 @@ export function TimeAttendancePage({
         approvableIds.length === 1
           ? employees.find((employee) => employee.id === approvableIds[0])?.name
           : undefined;
-      showApprovalToast(approvableIds.length, "approved", employeeName);
+      showApprovalToast(
+        approvableIds.length,
+        "approved",
+        employeeName,
+        undoApproval,
+      );
       return;
     }
 
@@ -276,8 +341,10 @@ export function TimeAttendancePage({
         <PayPeriodToolbar
           allEmployeesApproved={allEmployeesApproved}
           approvedCount={approvedCount}
+          payPeriodId={payPeriodId}
           prepMode={prepMode}
           totalEmployeeCount={totalEmployeeCount}
+          onPayPeriodChange={handlePayPeriodChange}
           onPrepModeChange={setPrepMode}
         />
         {selectedIds.size > 0 ? (
@@ -299,11 +366,13 @@ export function TimeAttendancePage({
         )}
         <EmployeeTable
           approvalById={approvalById}
+          employees={employees}
           employmentStatusFilter={employmentStatusFilter}
           onResolveAlert={resolveAlert}
           onSetEmployeeApproval={setEmployeeApproval}
           onSearchQueryChange={setSearchQuery}
           onSelectedIdsChange={setSelectedIds}
+          payPeriodRange={payPeriodRange}
           prepMode={prepMode}
           resolvedAlertIds={resolvedAlertIds}
           searchQuery={searchQuery}
@@ -318,6 +387,7 @@ export function TimeAttendancePage({
           action={toast.action}
           message={toast.message}
           onDismiss={() => setToast(null)}
+          onUndo={toast.onUndo}
         />
       ) : null}
 

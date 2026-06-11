@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { EmployeeTable } from "@/components/time-attendance/employee-table";
-import { employees } from "@/data/employees";
+import { junePayPeriodEmployees } from "@/data/employees";
+import { payPeriods } from "@/data/pay-periods";
 import type { ApprovalStatus } from "@/data/employees";
 
 type EmployeeTablePreviewProps = {
@@ -13,7 +14,10 @@ export function EmployeeTablePreview({ prepMode = true }: EmployeeTablePreviewPr
   const approvalById = useMemo(
     () =>
       Object.fromEntries(
-        employees.map((employee) => [employee.id, "pending" as ApprovalStatus]),
+        junePayPeriodEmployees.map((employee) => [
+          employee.id,
+          "pending" as ApprovalStatus,
+        ]),
       ),
     [],
   );
@@ -21,11 +25,13 @@ export function EmployeeTablePreview({ prepMode = true }: EmployeeTablePreviewPr
   return (
     <EmployeeTable
       approvalById={approvalById}
+      employees={junePayPeriodEmployees}
       employmentStatusFilter={[]}
       onResolveAlert={() => undefined}
       onSearchQueryChange={() => undefined}
       onSelectedIdsChange={setSelectedIds}
       onSetEmployeeApproval={() => undefined}
+      payPeriodRange={payPeriods[0].range}
       prepMode={prepMode}
       resolvedAlertIds={new Set()}
       searchQuery=""

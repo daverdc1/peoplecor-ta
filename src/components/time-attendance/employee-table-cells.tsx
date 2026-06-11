@@ -13,7 +13,7 @@ export const cellDetailClassName = "text-[10.5px] leading-4 text-muted";
 
 export function TableCellCenter({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-[51px] w-full flex-col items-center justify-center">
+    <div className="flex min-h-[51px] w-full min-w-0 flex-col items-center justify-center px-0.5">
       {children}
     </div>
   );
@@ -31,9 +31,7 @@ export function MoneyValue({ cell }: { cell?: MoneyCell }) {
           {cell.value}
         </p>
         {cell.detail ? (
-          <p className={cn("m-0 whitespace-nowrap", cellDetailClassName)}>
-            {cell.detail}
-          </p>
+          <TruncatedText className={cellDetailClassName}>{cell.detail}</TruncatedText>
         ) : null}
       </>
     );
@@ -41,12 +39,13 @@ export function MoneyValue({ cell }: { cell?: MoneyCell }) {
 
   return (
     <div className="mx-auto w-full min-w-0 text-center">
-      <span className="relative inline-block max-w-full py-0.5">
-        <span className="whitespace-nowrap text-sm leading-5 text-ink">
+      <div className="grid w-full grid-cols-[1fr_auto_1fr] items-center">
+        <span aria-hidden />
+        <p className="col-start-2 m-0 whitespace-nowrap text-sm leading-5 text-ink">
           {cell.value}
-        </span>
+        </p>
         <span
-          className="absolute top-[calc(50%+2px)] left-full ml-[2px] -translate-y-1/2"
+          className="col-start-3 flex min-w-4 items-center justify-start pl-0.5"
           {...inspectorProps(inspectorRegistry["TBL-TIP-WAGE"])}
         >
           <WageChangeTooltip wageChange={cell.wageChange}>
@@ -57,17 +56,15 @@ export function MoneyValue({ cell }: { cell?: MoneyCell }) {
                   ? "Wage increase"
                   : "Wage decrease"
               }
-              className="flex size-4 cursor-pointer items-center justify-center rounded-sm leading-none"
+              className="flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm leading-none"
             >
               <WageChangeIcon size={14} type={cell.wageChange.type} />
             </button>
           </WageChangeTooltip>
         </span>
-      </span>
+      </div>
       {cell.detail ? (
-        <p className={cn("m-0 whitespace-nowrap", cellDetailClassName)}>
-          {cell.detail}
-        </p>
+        <TruncatedText className={cellDetailClassName}>{cell.detail}</TruncatedText>
       ) : null}
     </div>
   );
@@ -107,7 +104,7 @@ function DeductionValue({
         <p
           className={cn(
             "col-start-2 m-0 whitespace-nowrap text-sm leading-5 font-semibold",
-            tone === "success" ? "text-success-dark" : "text-danger-text",
+            tone === "success" ? "text-success-text" : "text-danger-text",
           )}
         >
           {item.value}

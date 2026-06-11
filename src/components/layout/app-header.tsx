@@ -1,4 +1,8 @@
 import { useLayoutEffect, useRef, useState, type ButtonHTMLAttributes } from "react";
+import {
+  APP_HEADER_HEIGHT_PX,
+  useAppHeaderVisible,
+} from "@/hooks/use-app-header-visible";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { PeopleCorLogo } from "@/components/icons/peoplecor-logo";
 import { Button } from "@/components/ui/button";
@@ -29,7 +33,7 @@ const navItems: NavItem[] = [
 ];
 
 const siteNameButtonClass =
-  "flex cursor-pointer items-center gap-0 rounded-sm py-1.5 pl-1.5 pr-0.5 text-white transition-colors hover:bg-white/10";
+  "flex cursor-pointer items-center gap-0 rounded-sm py-1.5 pl-1.5 pr-0.5 text-white transition-colors hover:bg-nav-hover";
 
 const navGapPx = 4;
 
@@ -44,8 +48,11 @@ function NavItemButton({
     <button
       type="button"
       className={cn(
-        "flex h-8 shrink-0 cursor-pointer items-center gap-0 rounded-sm px-2 text-sm font-semibold text-white transition-colors",
-        item.active ? "bg-brand-dark hover:bg-brand-dark" : "hover:bg-nav-hover",
+        "flex h-8 shrink-0 cursor-pointer items-center gap-0 rounded-sm text-sm font-semibold text-white transition-colors",
+        item.dropdown ? "pl-2 pr-1" : "px-2",
+        item.active
+          ? "bg-nav-active hover:bg-nav-active-hover"
+          : "hover:bg-nav-hover",
         className,
       )}
       {...props}
@@ -107,14 +114,26 @@ function useResponsiveNavCount(itemCount: number) {
   return { measureRef, navRef, visibleCount };
 }
 
-export function AppHeader() {
+type AppHeaderProps = {
+  embedded?: boolean;
+};
+
+export function AppHeader({ embedded = false }: AppHeaderProps) {
   const { measureRef, navRef, visibleCount } = useResponsiveNavCount(navItems.length);
+  const headerVisible = useAppHeaderVisible();
   const visibleItems = navItems.slice(0, visibleCount);
   const overflowItems = navItems.slice(visibleCount);
 
   return (
+    <>
     <header
-      className="flex h-[48px] items-center justify-between gap-4 bg-brand-dark px-6 text-white"
+      className={cn(
+        "flex h-[48px] items-center justify-between gap-4 bg-brand-dark px-6 text-white",
+        embedded
+          ? "relative w-full"
+          : "fixed inset-x-0 top-0 z-50 transition-transform duration-200 ease-in-out",
+        !embedded && !headerVisible && "-translate-y-full",
+      )}
       {...inspectorProps(inspectorRegistry.HDR)}
     >
       <div className="flex min-w-0 flex-1 items-center">
@@ -145,14 +164,11 @@ export function AppHeader() {
           {overflowItems.length > 0 ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="flex h-8 shrink-0 cursor-pointer items-center gap-0 rounded-sm px-2 text-sm font-semibold text-white transition-colors hover:bg-nav-hover data-[state=open]:bg-nav-hover"
+                <NavItemButton
+                  className="data-[state=open]:bg-nav-hover"
+                  item={{ label: "More", dropdown: true }}
                   {...inspectorProps(inspectorRegistry["HDR-MOR"])}
-                >
-                  More
-                  <MaterialIcon name="arrow_drop_down" className="opacity-90" size={20} />
-                </button>
+                />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="min-w-[200px]">
                 {overflowItems.map((item) => (
@@ -184,5 +200,13 @@ export function AppHeader() {
         </Button>
       </div>
     </header>
+    {embedded ? null : (
+      <div
+        aria-hidden
+        className="shrink-0"
+        style={{ height: APP_HEADER_HEIGHT_PX }}
+      />
+    )}
+    </>
   );
 }

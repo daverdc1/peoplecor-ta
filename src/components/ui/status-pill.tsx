@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const statusPillVariants = cva(
+export const statusPillVariants = cva(
   "inline-flex h-5 shrink-0 items-center justify-center gap-1 rounded-pill border px-2 text-[10px] font-bold uppercase leading-4",
   {
     variants: {
       variant: {
-        success: "border-transparent bg-success-dark text-white",
+        success: "border-transparent bg-success-text text-white",
         warning:
           "border-warning/60 bg-warning/25 text-warning-text",
         neutral: "border-border bg-surface-muted text-subtle",

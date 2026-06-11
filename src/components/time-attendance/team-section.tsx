@@ -1,11 +1,12 @@
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox, CheckboxContainer } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
 type TeamSectionHeaderProps = {
   team: string;
   employeeCount: number;
   remainingColSpan: number;
-  rightSectionColumnCount: number;
+  adjustmentColumnCount: number;
+  showStatusColumn: boolean;
   allSelected: boolean;
   someSelected: boolean;
   onToggleAll: () => void;
@@ -15,7 +16,8 @@ export function TeamSectionHeader({
   team,
   employeeCount,
   remainingColSpan,
-  rightSectionColumnCount,
+  adjustmentColumnCount,
+  showStatusColumn,
   allSelected,
   someSelected,
   onToggleAll,
@@ -32,11 +34,13 @@ export function TeamSectionHeader({
           sectionSpacing,
         )}
       >
-        <Checkbox
-          aria-label={`Select all employees in ${team}`}
-          checked={allSelected ? true : someSelected ? "indeterminate" : false}
-          onCheckedChange={onToggleAll}
-        />
+        <CheckboxContainer>
+          <Checkbox
+            aria-label={`Select all employees in ${team}`}
+            checked={allSelected ? true : someSelected ? "indeterminate" : false}
+            onCheckedChange={onToggleAll}
+          />
+        </CheckboxContainer>
       </td>
       <td
         className={cn(
@@ -53,10 +57,15 @@ export function TeamSectionHeader({
         colSpan={remainingColSpan}
         className={cn("bg-page", sectionSpacing)}
       />
-      {rightSectionColumnCount > 0 ? (
+      {adjustmentColumnCount > 0 ? (
         <td
-          colSpan={rightSectionColumnCount}
+          colSpan={adjustmentColumnCount}
           className={cn("bg-white", sectionSpacing)}
+        />
+      ) : null}
+      {showStatusColumn ? (
+        <td
+          className={cn("sticky right-0 z-30 bg-white", sectionSpacing)}
         />
       ) : null}
     </tr>

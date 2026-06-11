@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AlertBadgeIcon } from "@/components/icons/alert-badge-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { inspectorRegistry } from "@/lib/inspector-registry";
 import { inspectorProps } from "@/lib/inspector";
@@ -9,18 +10,16 @@ const AUTO_DISMISS_MS = 5000;
 
 export type ToastAction = "approved" | "unapproved" | "approval-blocked";
 
-const toastActionStyles = {
+const materialToastIcons = {
   approved: {
     icon: "check_circle",
     iconClassName: "text-success",
+    filled: true,
   },
   unapproved: {
     icon: "undo",
     iconClassName: "text-warning",
-  },
-  "approval-blocked": {
-    icon: "warning",
-    iconClassName: "text-danger",
+    filled: false,
   },
 } as const;
 
@@ -28,10 +27,10 @@ type ToastProps = {
   action: ToastAction;
   message: string;
   onDismiss: () => void;
+  onUndo?: () => void;
 };
 
-export function Toast({ action, message, onDismiss }: ToastProps) {
-  const actionStyle = toastActionStyles[action];
+export function Toast({ action, message, onDismiss, onUndo }: ToastProps) {
   const [visible, setVisible] = useState(false);
   const dismissedRef = useRef(false);
 
@@ -44,6 +43,11 @@ export function Toast({ action, message, onDismiss }: ToastProps) {
     setVisible(false);
     window.setTimeout(onDismiss, DISSOLVE_MS);
   }, [onDismiss]);
+
+  const handleUndo = () => {
+    onUndo?.();
+    dismiss();
+  };
 
   useEffect(() => {
     dismissedRef.current = false;
@@ -71,14 +75,27 @@ export function Toast({ action, message, onDismiss }: ToastProps) {
       )}
     >
       <span className="flex min-w-0 flex-1 items-center gap-2.5">
-        <MaterialIcon
-          name={actionStyle.icon}
-          className={actionStyle.iconClassName}
-          filled={action === "approved"}
-          size={20}
-        />
+        {action === "approval-blocked" ? (
+          <AlertBadgeIcon size={20} />
+        ) : (
+          <MaterialIcon
+            name={materialToastIcons[action].icon}
+            className={materialToastIcons[action].iconClassName}
+            filled={materialToastIcons[action].filled}
+            size={20}
+          />
+        )}
         {message}
       </span>
+      {onUndo ? (
+        <button
+          type="button"
+          className="shrink-0 cursor-pointer text-sm font-semibold text-white hover:underline"
+          onClick={handleUndo}
+        >
+          Undo
+        </button>
+      ) : null}
       <button
         type="button"
         aria-label="Close notification"

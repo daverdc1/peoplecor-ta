@@ -30,4 +30,24 @@ const Checkbox = React.forwardRef<
 ));
 Checkbox.displayName = CheckboxPrimitive.Root.displayName;
 
-export { Checkbox };
+function CheckboxContainer({
+  className,
+  children,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement>) {
+  return (
+    <span
+      className={cn(
+        "relative inline-flex shrink-0 items-center justify-center rounded-sm",
+        "before:pointer-events-none before:absolute before:-inset-1.5 before:rounded-sm before:content-['']",
+        "hover:before:bg-ink/5",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </span>
+  );
+}
+
+export { Checkbox, CheckboxContainer };

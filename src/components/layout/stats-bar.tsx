@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
+import { AlertBadgeIcon } from "@/components/icons/alert-badge-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { SmartClockIcon } from "@/components/icons/smart-clock-icon";
 import { inspectorRegistry } from "@/lib/inspector-registry";
 import { inspectorProps } from "@/lib/inspector";
 import { cn } from "@/lib/utils";
-
-const siteNameButtonClass =
-  "flex cursor-pointer items-center gap-1 rounded-sm px-1.5 text-white transition-colors hover:bg-white/10";
 
 function StatSubheading({ children }: { children: ReactNode }) {
   return (
@@ -43,7 +41,7 @@ function ActivityDot({ color }: { color: "green" | "orange" }) {
       <span
         className={cn(
           "size-2.5 rounded-full",
-          color === "green" ? "bg-success" : "bg-warning-border",
+          color === "green" ? "bg-success" : "bg-warning",
         )}
       />
     </span>
@@ -57,21 +55,18 @@ export function StatsBar() {
       {...inspectorProps(inspectorRegistry.STS)}
     >
       <div className="flex h-full items-start gap-6">
-        <StatColumn label="Site Name">
-          <button type="button" className={cn(siteNameButtonClass, "text-[18px] leading-5")}>
-            XYZ Dairy
-            <MaterialIcon name="arrow_drop_down" size={20} />
-          </button>
+        <StatColumn gap="gap-0.5" label="Site Name">
+          <p className="mt-0.5 text-[18px] leading-5">XYZ Dairy</p>
         </StatColumn>
 
-        <StatColumn label="Site Manager">
-          <p className="text-[18px] leading-5">Jimmy Johnson</p>
+        <StatColumn gap="gap-0.5" label="Site Manager">
+          <p className="mt-0.5 text-[18px] leading-5">Jimmy Johnson</p>
         </StatColumn>
 
         <StatColumn gap="gap-0.5" label="Smart Clock">
           <button
             type="button"
-            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success p-0 transition-colors hover:bg-success-pill-hover"
+            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-success p-0 transition-colors hover:bg-success-dark"
           >
             <SmartClockIcon className="text-white" />
           </button>
@@ -115,20 +110,7 @@ export function StatsBar() {
               type="button"
               className="flex items-center gap-1 rounded-pill bg-stats-badge px-3 py-1 transition-colors hover:bg-stats-badge-hover"
             >
-              <span className="relative inline-flex size-4 shrink-0 items-center justify-center">
-                <MaterialIcon
-                  name="warning"
-                  className="text-danger"
-                  filled
-                  size={16}
-                />
-                <MaterialIcon
-                  name="priority_high"
-                  className="absolute mt-px text-white"
-                  size={9}
-                  weight={700}
-                />
-              </span>
+              <AlertBadgeIcon />
               <span className="text-sm font-semibold leading-5">12</span>
             </button>
           </StatColumn>

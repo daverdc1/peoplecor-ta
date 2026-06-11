@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { ComponentSection } from "@/components/design-system/component-section";
 import { Badge } from "@/components/ui/badge";
@@ -9,42 +10,53 @@ import { Switch } from "@/components/ui/switch";
 import { inspectorRegistry } from "@/lib/inspector-registry";
 import { inspectorProps } from "@/lib/inspector";
 
+const payrollButtonClassName =
+  "border-0 bg-payroll-yellow text-ink hover:bg-payroll-yellow/90 disabled:bg-surface-muted disabled:text-muted";
+
 export function UiComponentsShowcase() {
+  const [showDisabled, setShowDisabled] = useState(false);
+
   return (
     <div className="flex flex-col gap-2">
       <ComponentSection sectionId="ds-section-button" title="Buttons">
-        <div className="flex flex-wrap items-center gap-3">
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-01"])}>
-            <Button type="button">Primary</Button>
-          </span>
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-02"])}>
-            <Button type="button" variant="brandOutline">
-              Brand Outline
-            </Button>
-          </span>
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-03"])}>
-            <Button type="button" variant="ghost">
-              Ghost
-            </Button>
-          </span>
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-04"])}>
-            <Button type="button" variant="success">
-              Success
-            </Button>
-          </span>
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-05"])}>
-            <Button
-              type="button"
-              className="border-0 bg-payroll-yellow text-ink hover:bg-payroll-yellow/90"
-            >
-              Payroll
-            </Button>
-          </span>
-          <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-06"])}>
-            <Button type="button" disabled>
-              Disabled
-            </Button>
-          </span>
+        <div className="flex flex-col gap-4">
+          <label className="flex w-fit cursor-pointer items-center gap-2 text-sm text-ink">
+            <Switch
+              checked={showDisabled}
+              onCheckedChange={setShowDisabled}
+            />
+            Show disabled states
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-01"])}>
+              <Button disabled={showDisabled} type="button">
+                Primary
+              </Button>
+            </span>
+            <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-02"])}>
+              <Button
+                disabled={showDisabled}
+                type="button"
+                variant="brandOutline"
+              >
+                Brand Outline
+              </Button>
+            </span>
+            <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-03"])}>
+              <Button disabled={showDisabled} type="button" variant="ghost">
+                Ghost
+              </Button>
+            </span>
+            <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-BTN-04"])}>
+              <Button
+                className={payrollButtonClassName}
+                disabled={showDisabled}
+                type="button"
+              >
+                Payroll
+              </Button>
+            </span>
+          </div>
         </div>
       </ComponentSection>
 
@@ -101,7 +113,9 @@ export function UiComponentsShowcase() {
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex" {...inspectorProps(inspectorRegistry["DS-PIL-01"])}>
             <StatusPill
-              icon={<MaterialIcon name="hourglass_top" className="text-warning-text" size={12} />}
+              icon={
+                <MaterialIcon name="hourglass_top" className="text-warning-text" size={12} />
+              }
               variant="warning"
             >
               Pending

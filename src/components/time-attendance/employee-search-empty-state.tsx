@@ -13,7 +13,7 @@ export function EmployeeSearchEmptyState({
       <p className="m-0 mt-4 text-sm text-ink">No results found</p>
       <button
         type="button"
-        className="mt-2 cursor-pointer text-xs font-normal text-brand hover:underline"
+        className="mt-2 cursor-pointer text-xs font-normal text-brand-dark hover:underline"
         onClick={onClearSearch}
       >
         Clear search

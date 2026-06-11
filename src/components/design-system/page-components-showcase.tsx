@@ -11,7 +11,7 @@ export function PageComponentsShowcase() {
   return (
     <div className="flex flex-col gap-2">
       <ComponentSection sectionId="page-app-header" title="App Header">
-        <AppHeader />
+        <AppHeader embedded />
       </ComponentSection>
 
       <ComponentSection sectionId="page-stats-bar" title="Stats Bar">
@@ -31,8 +31,10 @@ export function PageComponentsShowcase() {
           <PayPeriodToolbar
             allEmployeesApproved={false}
             approvedCount={12}
+            payPeriodId="june-1-15"
             prepMode
             totalEmployeeCount={24}
+            onPayPeriodChange={() => undefined}
             onPrepModeChange={() => undefined}
           />
         </div>

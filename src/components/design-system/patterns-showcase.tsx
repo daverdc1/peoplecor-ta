@@ -1,4 +1,5 @@
 import { ActionsMenuPreview } from "@/components/design-system/actions-menu-preview";
+import { EmployeeAlertIcon } from "@/components/icons/employee-alert-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { WageChangeIcon } from "@/components/icons/wage-change-icon";
 import { ComponentSection } from "@/components/design-system/component-section";
@@ -65,7 +66,7 @@ export function PatternsShowcase() {
                     className="inline-flex cursor-pointer flex-col items-center"
                   >
                     <span className="text-xs font-semibold text-danger-text">1</span>
-                    <WageChangeIcon type="increase" />
+                    <EmployeeAlertIcon className="text-danger-text" />
                   </button>
                 </HoverTooltip>
               </span>

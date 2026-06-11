@@ -16,7 +16,7 @@ function Swatch({
     <div className="flex flex-col gap-2">
       <div className={cn("h-12 rounded-sm border border-border", className)} />
       <div>
-        <p className="m-0 text-sm font-medium text-ink">{name}</p>
+        <p className="ds-heading m-0 text-sm font-medium text-ink">{name}</p>
         <p className="ds-notes m-0 text-muted">{value}</p>
       </div>
     </div>
@@ -31,7 +31,9 @@ export function FoundationsShowcase() {
         id="ds-colors"
         {...inspectorProps(inspectorRegistry["DS-CLR"])}
       >
-        <h3 className="ds-heading m-0 text-lg font-semibold tracking-tight text-ink">Colors</h3>
+        <h3 className="ds-heading m-0 text-lg font-semibold tracking-tight text-ink">
+          Colors
+        </h3>
         <div className="mt-4 rounded-md bg-ds-surface p-6">
           <div className="flex flex-col gap-10">
             {colorTokenGroups.map((group) => (
@@ -60,7 +62,9 @@ export function FoundationsShowcase() {
         id="ds-typography"
         {...inspectorProps(inspectorRegistry["DS-TYP"])}
       >
-        <h3 className="ds-heading m-0 text-lg font-semibold tracking-tight text-ink">Typography</h3>
+        <h3 className="ds-heading m-0 text-lg font-semibold tracking-tight text-ink">
+          Typography
+        </h3>
         <div className="mt-4 flex flex-col gap-4 rounded-md bg-ds-surface p-6">
           <p className="m-0 text-2xl font-semibold text-ink">Page title / 24 semibold</p>
           <p className="m-0 text-base font-semibold text-ink">Section title / 16 semibold</p>

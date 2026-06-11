@@ -1,5 +1,6 @@
 import {
   Fragment,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -8,7 +9,7 @@ import {
 } from "react";
 import { EmployeeAlertIcon } from "@/components/icons/employee-alert-icon";
 import { MaterialIcon } from "@/components/icons/material-icon";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox, CheckboxContainer } from "@/components/ui/checkbox";
 import { HoverTooltip, TruncatedButton, TruncatedInline } from "@/components/ui/truncated-text";
 import { EmployeeApprovalPill } from "@/components/time-attendance/employee-approval-pill";
 import { EmployeeActionsMenu } from "@/components/time-attendance/employee-actions-menu";
@@ -20,11 +21,10 @@ import {
 import { EmployeeSearchEmptyState } from "@/components/time-attendance/employee-search-empty-state";
 import { TeamSectionHeader } from "@/components/time-attendance/team-section";
 import { groupEmployeesByTeam } from "@/lib/group-employees-by-team";
-import {
-  employees,
-  type ApprovalStatus,
-  type EmployeeRow,
-  type EmploymentStatus,
+import type {
+  ApprovalStatus,
+  EmployeeRow,
+  EmploymentStatus,
 } from "@/data/employees";
 import { filterEmployees } from "@/lib/filter-employees";
 import { getInspectorEntryForRow, inspectorRegistry } from "@/lib/inspector-registry";
@@ -47,7 +47,7 @@ function EmployeeCell({ employee }: { employee: EmployeeRow }) {
     <div className="min-w-0">
       <div className="flex min-w-0 items-center gap-2">
         <StatusIndicator employee={employee} />
-        <TruncatedButton className="w-full cursor-pointer text-left text-sm leading-5 font-semibold text-brand hover:underline">
+        <TruncatedButton className="w-full cursor-pointer text-left text-sm leading-5 font-semibold text-brand-dark hover:underline">
           {employee.name}
         </TruncatedButton>
       </div>
@@ -198,15 +198,18 @@ function SortableHeader({
   sort,
   onSort,
   ariaLabel,
+  align = "left",
 }: {
   label: ReactNode;
   sortKey: SortKey;
-  sort: SortState;
+  sort: SortState | null;
   onSort: (key: SortKey) => void;
   ariaLabel?: string;
+  align?: "left" | "center";
 }) {
-  const isActive = sort.key === sortKey;
+  const isActive = sort?.key === sortKey;
   const direction = isActive ? sort.direction : null;
+  const isCentered = align === "center";
 
   return (
     <button
@@ -221,14 +224,32 @@ function SortableHeader({
       }
       onClick={() => onSort(sortKey)}
       className={cn(
-        "group relative inline-block cursor-pointer rounded-sm uppercase hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+        "group relative h-14 max-w-full cursor-pointer rounded-sm text-xs leading-4 uppercase hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand",
+        isCentered ? "w-full text-center" : "shrink-0 text-left",
         isActive ? "text-ink" : "text-subtle",
       )}
     >
-      {label}
+      {!isCentered ? (
+        <span
+          className="invisible block whitespace-nowrap leading-4"
+          aria-hidden="true"
+        >
+          {label}
+        </span>
+      ) : null}
       <span
         className={cn(
-          "pointer-events-none absolute top-1/2 left-full ml-0.5 flex -translate-y-1/2 items-center justify-center",
+          "absolute top-1/2 -translate-y-1/2",
+          isCentered
+            ? "inset-x-0 whitespace-normal text-center"
+            : "left-0 whitespace-nowrap",
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          "absolute bottom-0 left-1/2 flex h-4 w-4 -translate-x-1/2 items-center justify-center",
           !isActive &&
             "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100",
         )}
@@ -253,32 +274,56 @@ function SortableHeader({
 
 function StatusColumnLayout({
   children,
+  header = false,
   trailing,
   gap = "gap-1",
 }: {
   children: ReactNode;
+  header?: boolean;
   trailing: ReactNode;
   gap?: "gap-1" | "gap-3";
 }) {
   return (
-    <div className={cn("flex items-center", gap)}>
-      <div className="flex min-w-0 flex-1 justify-center">{children}</div>
+    <div
+      className={cn(
+        "flex w-full",
+        gap,
+        header ? "h-14" : "items-center",
+      )}
+    >
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 justify-center",
+          header && "h-full",
+        )}
+      >
+        {children}
+      </div>
       <div className="size-8 shrink-0">{trailing}</div>
     </div>
   );
 }
 
 const thCell = "h-14 align-middle px-3";
+const thCentered = cn(thCell, "text-center");
 const tdCell =
   "h-[52px] overflow-visible border-t border-border align-middle px-3";
 const tdNameCell =
   "h-[52px] overflow-visible border-t border-border align-middle px-3";
 
-function rowCellBg(isSelected: boolean, side: "left" | "right") {
+function rowCellBg(
+  isSelected: boolean,
+  side: "left" | "right",
+  options?: { isApprovedInPrepMode?: boolean },
+) {
   if (isSelected) {
     return side === "left"
       ? "bg-row-selected-left group-hover:bg-row-selected-left"
       : "bg-row-selected-right group-hover:bg-row-selected-right";
+  }
+
+  if (options?.isApprovedInPrepMode) {
+    return "bg-success-muted group-hover:bg-success-muted";
   }
 
   if (side === "left") {
@@ -286,6 +331,29 @@ function rowCellBg(isSelected: boolean, side: "left" | "right") {
   }
 
   return "bg-white group-hover:bg-row-hover-right";
+}
+
+const TABLE_HORIZONTAL_PADDING_PX = 48;
+
+function stickyActionsHeaderClass(prepMode: boolean) {
+  return cn(
+    "sticky right-0 z-30",
+    prepMode ? "bg-white" : "bg-page",
+  );
+}
+
+function stickyActionsCellClass(
+  isSelected: boolean,
+  prepMode: boolean,
+  options?: { isApprovedInPrepMode?: boolean; isLastRow?: boolean },
+) {
+  return cn(
+    "sticky right-0 z-20",
+    rowCellBg(isSelected, prepMode ? "right" : "left", {
+      isApprovedInPrepMode: options?.isApprovedInPrepMode,
+    }),
+    options?.isLastRow && "rounded-br-[8px]",
+  );
 }
 
 const adjustmentColumns = [
@@ -306,13 +374,97 @@ const adjustmentColumns = [
 const CHECKBOX_COL_PX = 40;
 const ALERTS_COL_PX = 48;
 const ACTIONS_COL_PX = 132;
-const NAME_FLEX_WEIGHT = 0.28;
+const NAME_FLEX_WEIGHT = 0.22;
 const NAME_COLUMN_UNITS_OFF = 3;
-const HOUR_FLEX_WEIGHT = 0.1;
-const TOTAL_FLEX_WEIGHT = 0.15;
-const DEFAULT_LEFT_RATIO = 0.58;
+const HOUR_FLEX_WEIGHT = 0.12;
+const TOTAL_FLEX_WEIGHT = 0.14;
+const MIN_NAME_COL_PX = 120;
+const MIN_HOUR_COL_PX = 90;
+const MIN_TOTAL_COL_PX = 86;
+const MIN_ADJUSTMENT_COL_PX = 76;
+const TABLE_MIN_WIDTH_PX =
+  CHECKBOX_COL_PX +
+  ALERTS_COL_PX +
+  ACTIONS_COL_PX +
+  MIN_NAME_COL_PX +
+  MIN_HOUR_COL_PX * hourColumns.length +
+  MIN_TOTAL_COL_PX +
+  MIN_ADJUSTMENT_COL_PX * adjustmentColumns.length;
+const LEFT_SECTION_MIN_PX =
+  CHECKBOX_COL_PX +
+  ALERTS_COL_PX +
+  MIN_NAME_COL_PX +
+  MIN_HOUR_COL_PX * hourColumns.length +
+  MIN_TOTAL_COL_PX;
+const RIGHT_SECTION_MIN_PX =
+  MIN_ADJUSTMENT_COL_PX * adjustmentColumns.length + ACTIONS_COL_PX;
+const DEFAULT_LEFT_RATIO = 0.6;
 const MIN_LEFT_RATIO = 0.3;
 const MAX_LEFT_RATIO = 0.75;
+
+function getResizeRatioBounds(tableWidth: number) {
+  if (tableWidth <= 0) {
+    return { min: MIN_LEFT_RATIO, max: MAX_LEFT_RATIO };
+  }
+
+  const minRatio = LEFT_SECTION_MIN_PX / tableWidth;
+  const maxRatio = (tableWidth - RIGHT_SECTION_MIN_PX) / tableWidth;
+
+  return {
+    min: Math.max(MIN_LEFT_RATIO, minRatio),
+    max: Math.min(MAX_LEFT_RATIO, maxRatio),
+  };
+}
+
+function distributeWidths(
+  availablePx: number,
+  segments: { weight: number; min: number }[],
+) {
+  const totalWeight = segments.reduce((sum, segment) => sum + segment.weight, 0);
+  if (totalWeight <= 0 || availablePx <= 0) {
+    return segments.map((segment) => segment.min);
+  }
+
+  let widths = segments.map(
+    (segment) =>
+      Math.max(segment.min, (availablePx * segment.weight) / totalWeight),
+  );
+  let total = widths.reduce((sum, width) => sum + width, 0);
+
+  if (total < availablePx) {
+    const extra = availablePx - total;
+    widths = widths.map(
+      (width, index) =>
+        width + (extra * segments[index].weight) / totalWeight,
+    );
+    return widths;
+  }
+
+  let deficit = total - availablePx;
+  while (deficit > 0.5) {
+    const shrinkable = widths.map(
+      (width, index) => Math.max(0, width - segments[index].min),
+    );
+    const shrinkableTotal = shrinkable.reduce((sum, width) => sum + width, 0);
+
+    if (shrinkableTotal <= 0) {
+      break;
+    }
+
+    widths = widths.map((width, index) => {
+      const room = shrinkable[index];
+      if (room <= 0) {
+        return width;
+      }
+
+      return width - (deficit * room) / shrinkableTotal;
+    });
+    total = widths.reduce((sum, width) => sum + width, 0);
+    deficit = total - availablePx;
+  }
+
+  return widths;
+}
 function getEffectiveLeftRatio(
   tableWidth: number,
   prepMode: boolean,
@@ -340,34 +492,57 @@ function getColumnWidths(
   const leftFlexPx = Math.max(0, leftSectionPx - CHECKBOX_COL_PX - ALERTS_COL_PX);
   const rightFlexPx = Math.max(0, rightSectionPx - ACTIONS_COL_PX);
 
-  if (!prepMode) {
-    const hourTotalColumnCount = hourColumns.length + 1;
-    const totalUnits = NAME_COLUMN_UNITS_OFF + hourTotalColumnCount;
-    const unitWidth = totalUnits > 0 ? leftFlexPx / totalUnits : 0;
+  const leftSegments = prepMode
+    ? [
+        { weight: NAME_FLEX_WEIGHT, min: MIN_NAME_COL_PX },
+        {
+          weight: HOUR_FLEX_WEIGHT * hourColumns.length,
+          min: MIN_HOUR_COL_PX * hourColumns.length,
+        },
+        { weight: TOTAL_FLEX_WEIGHT, min: MIN_TOTAL_COL_PX },
+      ]
+    : [
+        { weight: NAME_COLUMN_UNITS_OFF, min: MIN_NAME_COL_PX },
+        {
+          weight: hourColumns.length,
+          min: MIN_HOUR_COL_PX * hourColumns.length,
+        },
+        { weight: 1, min: MIN_TOTAL_COL_PX },
+      ];
+  const [namePx, hourGroupPx, totalPx] = distributeWidths(
+    leftFlexPx,
+    leftSegments,
+  );
+  const hourPx = hourGroupPx / hourColumns.length;
 
+  if (!prepMode) {
     return {
       checkbox: `${CHECKBOX_COL_PX}px`,
-      name: `${unitWidth * NAME_COLUMN_UNITS_OFF}px`,
+      name: `${namePx}px`,
       alerts: `${ALERTS_COL_PX}px`,
-      hour: `${unitWidth}px`,
-      total: `${unitWidth}px`,
+      hour: `${hourPx}px`,
+      total: `${totalPx}px`,
       adjustment: "0px",
       actions: `${ACTIONS_COL_PX}px`,
     };
   }
 
-  const flexWeight =
-    NAME_FLEX_WEIGHT +
-    HOUR_FLEX_WEIGHT * hourColumns.length +
-    TOTAL_FLEX_WEIGHT;
+  const adjustmentPx =
+    distributeWidths(
+      rightFlexPx,
+      adjustmentColumns.map(() => ({
+        weight: 1,
+        min: MIN_ADJUSTMENT_COL_PX,
+      })),
+    )[0] ?? MIN_ADJUSTMENT_COL_PX;
 
   return {
     checkbox: `${CHECKBOX_COL_PX}px`,
-    name: `${leftFlexPx * (NAME_FLEX_WEIGHT / flexWeight)}px`,
+    name: `${namePx}px`,
     alerts: `${ALERTS_COL_PX}px`,
-    hour: `${leftFlexPx * (HOUR_FLEX_WEIGHT / flexWeight)}px`,
-    total: `${leftFlexPx * (TOTAL_FLEX_WEIGHT / flexWeight)}px`,
-    adjustment: `${rightFlexPx / adjustmentColumns.length}px`,
+    hour: `${hourPx}px`,
+    total: `${totalPx}px`,
+    adjustment: `${adjustmentPx}px`,
     actions: `${ACTIONS_COL_PX}px`,
   };
 }
@@ -382,8 +557,8 @@ function adjustmentCellClass(prepMode: boolean) {
 
 function adjustmentHeaderClass(prepMode: boolean) {
   return cn(
-    thCell,
-    "overflow-hidden bg-white text-center",
+    thCentered,
+    "overflow-visible bg-white",
     prepMode ? "opacity-100" : "border-0 p-0 opacity-0",
   );
 }
@@ -393,9 +568,9 @@ function getLeftSectionColumnCount(prepMode: boolean) {
 }
 
 const LEFT_SECTION_COLUMN_COUNT = 3 + hourColumns.length + 1;
-const RIGHT_SECTION_COLUMN_COUNT = adjustmentColumns.length + 1;
 
 type EmployeeTableProps = {
+  employees: EmployeeRow[];
   employmentStatusFilter: EmploymentStatus[];
   selectedIds: Set<string>;
   onSelectedIdsChange: (selectedIds: Set<string>) => void;
@@ -408,11 +583,13 @@ type EmployeeTableProps = {
     employeeId: string,
     status: ApprovalStatus,
   ) => void;
+  payPeriodRange: string;
   resolvedAlertIds: Set<string>;
   viewMode: "name" | "team";
 };
 
 export function EmployeeTable({
+  employees,
   employmentStatusFilter,
   selectedIds,
   onSelectedIdsChange,
@@ -422,17 +599,43 @@ export function EmployeeTable({
   approvalById,
   onResolveAlert,
   onSetEmployeeApproval,
+  payPeriodRange,
   resolvedAlertIds,
   viewMode,
 }: EmployeeTableProps) {
-  const [sort, setSort] = useState<SortState>({
+  const [sort, setSort] = useState<SortState | null>({
     key: "firstName",
     direction: "asc",
   });
+  const [displayOrder, setDisplayOrder] = useState<string[] | null>(null);
   const [leftRatio, setLeftRatio] = useState(DEFAULT_LEFT_RATIO);
   const [isResizing, setIsResizing] = useState(false);
   const [tableWidth, setTableWidth] = useState(0);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [tableHeight, setTableHeight] = useState(0);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const tableWrapperRef = useRef<HTMLDivElement>(null);
+
+  const updateTableLayout = useCallback(() => {
+    const scrollEl = scrollRef.current;
+    const wrapperEl = tableWrapperRef.current;
+    const containerEl = tableContainerRef.current;
+    if (!scrollEl || !wrapperEl) {
+      return;
+    }
+
+    const minTableWidth = prepMode ? TABLE_MIN_WIDTH_PX : 800;
+    const parentWidth =
+      containerEl?.parentElement?.clientWidth ?? scrollEl.clientWidth;
+    const fitsWithPadding =
+      minTableWidth <= parentWidth - TABLE_HORIZONTAL_PADDING_PX;
+
+    setIsOverflowing(!fitsWithPadding);
+    setIsScrolled(scrollEl.scrollLeft > 0);
+    setTableHeight(wrapperEl.offsetHeight);
+  }, [prepMode]);
   const rowNumberByEmployeeId = useMemo(() => {
     const byFirstName = [...employees].sort((a, b) =>
       compareEmployees(
@@ -445,7 +648,7 @@ export function EmployeeTable({
     );
 
     return new Map(byFirstName.map((employee, index) => [employee.id, index + 1]));
-  }, [approvalById, resolvedAlertIds]);
+  }, [approvalById, employees, resolvedAlertIds]);
 
   const sortedEmployees = useMemo(() => {
     const filtered = filterEmployees(
@@ -454,10 +657,32 @@ export function EmployeeTable({
       searchQuery,
     );
 
+    if (!sort) {
+      if (!displayOrder) {
+        return filtered;
+      }
+
+      const orderIndex = new Map(displayOrder.map((id, index) => [id, index]));
+
+      return [...filtered].sort((a, b) => {
+        const indexA = orderIndex.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const indexB = orderIndex.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return indexA - indexB;
+      });
+    }
+
     return [...filtered].sort((a, b) =>
       compareEmployees(a, b, sort, approvalById, resolvedAlertIds),
     );
-  }, [approvalById, employmentStatusFilter, resolvedAlertIds, searchQuery, sort]);
+  }, [
+    approvalById,
+    displayOrder,
+    employees,
+    employmentStatusFilter,
+    resolvedAlertIds,
+    searchQuery,
+    sort,
+  ]);
   const teamGroups = useMemo(
     () => groupEmployeesByTeam(sortedEmployees),
     [sortedEmployees],
@@ -509,6 +734,9 @@ export function EmployeeTable({
     { isLastRow = false }: { isLastRow?: boolean } = {},
   ) => {
     const isSelected = selectedIds.has(employee.id);
+    const isApprovedInPrepMode =
+      prepMode && (approvalById[employee.id] ?? "pending") === "approved";
+    const rowBgOptions = { isApprovedInPrepMode };
 
     return (
       <tr
@@ -521,26 +749,28 @@ export function EmployeeTable({
         <td
           className={cn(
             tdCell,
-            "flex w-10 max-w-10 items-center pl-3 pr-0",
-            rowCellBg(isSelected, "left"),
+            "w-10 max-w-10 pl-3 pr-0",
+            rowCellBg(isSelected, "left", rowBgOptions),
             isLastRow && "rounded-bl-[8px]",
           )}
         >
-          <span {...inspectorProps(inspectorRegistry["TBL-CHK"])}>
-            <Checkbox
-              aria-label={`Select ${employee.name}`}
-              checked={isSelected}
-              onCheckedChange={(checked) =>
-                toggleRow(employee.id, checked === true)
-              }
-            />
-          </span>
+          <div className="flex min-h-[51px] items-center">
+            <CheckboxContainer {...inspectorProps(inspectorRegistry["TBL-CHK"])}>
+              <Checkbox
+                aria-label={`Select ${employee.name}`}
+                checked={isSelected}
+                onCheckedChange={(checked) =>
+                  toggleRow(employee.id, checked === true)
+                }
+              />
+            </CheckboxContainer>
+          </div>
         </td>
         <td
           className={cn(
             tdNameCell,
             "pl-1 pr-2",
-            rowCellBg(isSelected, "left"),
+            rowCellBg(isSelected, "left", rowBgOptions),
           )}
         >
           <EmployeeCell employee={employee} />
@@ -550,7 +780,7 @@ export function EmployeeTable({
             "w-12 max-w-12 px-3",
             tdCell,
             "text-center",
-            rowCellBg(isSelected, "left"),
+            rowCellBg(isSelected, "left", rowBgOptions),
           )}
           {...inspectorProps(inspectorRegistry["TBL-ALR"])}
         >
@@ -561,7 +791,7 @@ export function EmployeeTable({
                 type="button"
                 aria-label={`Resolve alert for ${employee.name}`}
                 className="inline-flex cursor-pointer flex-col items-center"
-                onClick={() => onResolveAlert(employee.id)}
+                onClick={() => handleResolveAlert(employee.id)}
               >
                 <span className="text-xs font-semibold text-danger-text">
                   {employee.alertCount}
@@ -574,7 +804,7 @@ export function EmployeeTable({
         {hourColumns.map((col) => (
           <td
             key={col.key}
-            className={cn(tdCell, rowCellBg(isSelected, "left"))}
+            className={cn(tdCell, rowCellBg(isSelected, "left", rowBgOptions))}
           >
             <TableCellCenter>
               <MoneyValue cell={employee[col.key]} />
@@ -584,12 +814,12 @@ export function EmployeeTable({
         <td
           className={cn(
             tdCell,
-            rowCellBg(isSelected, "left"),
+            rowCellBg(isSelected, "left", rowBgOptions),
             prepMode && isLastRow && "rounded-br-[8px]",
           )}
         >
           <TableCellCenter>
-            <p className="m-0 whitespace-nowrap text-sm font-semibold text-ink">
+            <p className="m-0 truncate text-sm font-semibold text-ink">
               {employee.total}
             </p>
           </TableCellCenter>
@@ -599,7 +829,7 @@ export function EmployeeTable({
             key={col.key}
             className={cn(
               adjustmentCellClass(prepMode),
-              rowCellBg(isSelected, "right"),
+              rowCellBg(isSelected, "right", rowBgOptions),
             )}
           >
             <DeductionList items={employee[col.key]} tone={col.tone} />
@@ -608,10 +838,11 @@ export function EmployeeTable({
         <td
           className={cn(
             tdCell,
-            "min-w-[132px] pr-2",
-            "text-center",
-            rowCellBg(isSelected, prepMode ? "right" : "left"),
-            !prepMode && isLastRow && "rounded-br-[8px]",
+            "min-w-[132px] pr-2 text-center",
+            stickyActionsCellClass(isSelected, prepMode, {
+              isApprovedInPrepMode,
+              isLastRow,
+            }),
           )}
           {...inspectorProps(inspectorRegistry["TBL-STS"])}
         >
@@ -631,7 +862,14 @@ export function EmployeeTable({
             }
           >
             <EmployeeApprovalPill
+              employeeName={employee.name}
+              hasAlerts={getEmployeeAlertCount(employee, resolvedAlertIds) > 0}
+              payPeriodRange={payPeriodRange}
+              prepMode={prepMode}
               status={approvalById[employee.id] ?? "pending"}
+              onApprove={() => onSetEmployeeApproval(employee.id, "approved")}
+              onClearAlerts={() => handleResolveAlert(employee.id)}
+              onUnapprove={() => onSetEmployeeApproval(employee.id, "pending")}
             />
           </StatusColumnLayout>
         </td>
@@ -639,7 +877,17 @@ export function EmployeeTable({
     );
   };
 
+  const handleResolveAlert = (employeeId: string) => {
+    if (sort?.key === "alertCount") {
+      setDisplayOrder(sortedEmployees.map((employee) => employee.id));
+      setSort(null);
+    }
+
+    onResolveAlert(employeeId);
+  };
+
   const handleSort = (key: SortKey) => {
+    setDisplayOrder(null);
     setSort((current) => {
       if (current?.key === key) {
         return {
@@ -652,6 +900,10 @@ export function EmployeeTable({
     });
   };
 
+  useEffect(() => {
+    setDisplayOrder(null);
+  }, [employees]);
+
   const startResize = (event: React.MouseEvent) => {
     event.preventDefault();
     setIsResizing(true);
@@ -659,22 +911,39 @@ export function EmployeeTable({
 
   useEffect(() => {
     const wrapper = tableWrapperRef.current;
+    const scrollEl = scrollRef.current;
     if (!wrapper) {
       return;
     }
 
     const updateWidth = () => {
       setTableWidth(wrapper.getBoundingClientRect().width);
+      updateTableLayout();
     };
 
     updateWidth();
     const observer = new ResizeObserver(updateWidth);
     observer.observe(wrapper);
+    if (tableContainerRef.current?.parentElement) {
+      observer.observe(tableContainerRef.current.parentElement);
+    }
+
+    scrollEl?.addEventListener("scroll", updateTableLayout, { passive: true });
 
     return () => {
       observer.disconnect();
+      scrollEl?.removeEventListener("scroll", updateTableLayout);
     };
-  }, []);
+  }, [updateTableLayout, prepMode, sortedEmployees.length, viewMode]);
+
+  useEffect(() => {
+    if (!prepMode || tableWidth <= 0) {
+      return;
+    }
+
+    const { min, max } = getResizeRatioBounds(tableWidth);
+    setLeftRatio((current) => Math.min(max, Math.max(min, current)));
+  }, [prepMode, tableWidth]);
 
   useEffect(() => {
     if (!isResizing) {
@@ -693,9 +962,8 @@ export function EmployeeTable({
 
         const { left, width } = wrapper.getBoundingClientRect();
         const nextRatio = (event.clientX - left) / width;
-        setLeftRatio(
-          Math.min(MAX_LEFT_RATIO, Math.max(MIN_LEFT_RATIO, nextRatio)),
-        );
+        const { min, max } = getResizeRatioBounds(width);
+        setLeftRatio(Math.min(max, Math.max(min, nextRatio)));
       });
     };
 
@@ -730,6 +998,7 @@ export function EmployeeTable({
     prepMode,
     leftRatio,
   );
+  const resizeRatioBounds = getResizeRatioBounds(resolvedTableWidth);
   const splitPositionPx = resolvedTableWidth * effectiveLeftRatio;
   const showSearchEmptyState =
     searchQuery.trim().length > 0 && sortedEmployees.length === 0;
@@ -743,35 +1012,58 @@ export function EmployeeTable({
   }
 
   return (
-    <div className="mx-6 overflow-x-auto" {...inspectorProps(inspectorRegistry.TBL)}>
+    <div
+      ref={tableContainerRef}
+      className={cn(
+        "relative",
+        !isScrolled && "ml-6",
+        !isOverflowing && !isScrolled && "mr-6",
+      )}
+    >
+      {isOverflowing ? (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute top-0 z-[25] w-3"
+          style={{
+            right: ACTIONS_COL_PX,
+            height: tableHeight,
+            background:
+              "linear-gradient(to left, rgba(0, 0, 0, 0.1), transparent)",
+          }}
+        />
+      ) : null}
       <div
-        ref={tableWrapperRef}
-        className={cn(
-          "relative w-full",
-          prepMode ? "min-w-[1100px]" : "min-w-[800px]",
-        )}
+        ref={scrollRef}
+        className="overflow-x-auto overflow-y-hidden"
+        {...inspectorProps(inspectorRegistry.TBL)}
       >
+        <div
+          ref={tableWrapperRef}
+          className={cn("relative w-full", !prepMode && "min-w-[800px]")}
+          style={{ minWidth: prepMode ? TABLE_MIN_WIDTH_PX : undefined }}
+        >
         <div
           role="separator"
           aria-orientation="vertical"
           aria-hidden={!prepMode}
           aria-label="Resize table sections"
           aria-valuenow={Math.round(effectiveLeftRatio * 100)}
-          aria-valuemin={Math.round(MIN_LEFT_RATIO * 100)}
-          aria-valuemax={Math.round(MAX_LEFT_RATIO * 100)}
+          aria-valuemin={Math.round(resizeRatioBounds.min * 100)}
+          aria-valuemax={Math.round(resizeRatioBounds.max * 100)}
           onMouseDown={prepMode ? startResize : undefined}
           className={cn(
-            "absolute top-0 z-10 h-full w-3 -translate-x-1/2 touch-none",
+            "absolute top-0 z-40 w-8 -translate-x-1/2 touch-none select-none",
             prepMode
-              ? "cursor-col-resize hover:bg-brand/20"
+              ? "cursor-col-resize hover:bg-brand/15"
               : "pointer-events-none opacity-0",
-            isResizing && prepMode && "bg-brand/30",
+            isResizing && prepMode && "bg-brand/25",
           )}
           style={{
             left:
               resolvedTableWidth > 0
                 ? `${splitPositionPx}px`
                 : `${effectiveLeftRatio * 100}%`,
+            height: tableHeight > 0 ? tableHeight : undefined,
           }}
         />
         <table className="w-full table-fixed border-separate border-spacing-0 text-sm">
@@ -795,61 +1087,61 @@ export function EmployeeTable({
           <tr className="text-xs font-bold uppercase text-subtle">
             <th
               className={cn(
-                "flex w-10 max-w-10 items-center rounded-tl-[8px] pl-3 pr-0",
+                "w-10 max-w-10 rounded-tl-[8px] pl-3 pr-0",
                 thCell,
                 "bg-page",
               )}
             >
-              <span {...inspectorProps(inspectorRegistry["TBL-CHK-ALL"])}>
-                <Checkbox
-                  aria-label="Select all employees"
-                  checked={allSelected ? true : someSelected ? "indeterminate" : false}
-                  onCheckedChange={toggleAll}
-                />
-              </span>
+              <div className="flex h-14 items-center">
+                <CheckboxContainer {...inspectorProps(inspectorRegistry["TBL-CHK-ALL"])}>
+                  <Checkbox
+                    aria-label="Select all employees"
+                    checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                    onCheckedChange={toggleAll}
+                  />
+                </CheckboxContainer>
+              </div>
             </th>
             <th className={cn(thCell, "overflow-visible bg-page pl-1 pr-2 text-left")}>
-              <span className="inline-flex items-center gap-2">
-                <span className="mr-4">
-                  <SortableHeader
-                    label="First"
-                    onSort={handleSort}
-                    sort={sort}
-                    sortKey="firstName"
-                  />
-                </span>
+              <div className="flex h-14 items-center gap-6">
+                <SortableHeader
+                  label="First"
+                  onSort={handleSort}
+                  sort={sort}
+                  sortKey="firstName"
+                />
                 <SortableHeader
                   label="Last"
                   onSort={handleSort}
                   sort={sort}
                   sortKey="lastName"
                 />
-              </span>
-            </th>
-            <th className={cn("w-12 max-w-12 overflow-visible bg-page px-3", thCell)}>
-              <div className="text-center">
-                <SortableHeader
-                  ariaLabel="Alerts"
-                  label={
-                    <MaterialIcon
-                      name="warning"
-                      className="text-danger-text"
-                      filled
-                      size={16}
-                    />
-                  }
-                  onSort={handleSort}
-                  sort={sort}
-                  sortKey="alertCount"
-                />
               </div>
+            </th>
+            <th className={cn("w-12 max-w-12 overflow-visible bg-page px-3", thCentered)}>
+              <SortableHeader
+                align="center"
+                ariaLabel="Alerts"
+                label={
+                  <MaterialIcon
+                    name="warning"
+                    className="text-danger-text"
+                    filled
+                    size={16}
+                  />
+                }
+                onSort={handleSort}
+                sort={sort}
+                sortKey="alertCount"
+              />
             </th>
             {hourColumns.map((col) => (
               <th
                 key={col.key}
-                className={cn(thCell, "overflow-visible bg-page text-center")}
+                className={cn(thCentered, "overflow-visible bg-page")}
               >
                 <SortableHeader
+                  align="center"
                   label={col.label}
                   onSort={handleSort}
                   sort={sort}
@@ -859,12 +1151,13 @@ export function EmployeeTable({
             ))}
             <th
               className={cn(
-                thCell,
-                "overflow-visible bg-page text-center",
+                thCentered,
+                "overflow-visible bg-page",
                 prepMode && "rounded-tr-[8px]",
               )}
             >
               <SortableHeader
+                align="center"
                 label="Total"
                 onSort={handleSort}
                 sort={sort}
@@ -874,6 +1167,7 @@ export function EmployeeTable({
             {adjustmentColumns.map((col) => (
               <th key={col.key} className={adjustmentHeaderClass(prepMode)}>
                 <SortableHeader
+                  align="center"
                   label={col.label}
                   onSort={handleSort}
                   sort={sort}
@@ -883,16 +1177,18 @@ export function EmployeeTable({
             ))}
             <th
               className={cn(
-                thCell,
-                "min-w-[132px] pr-2",
-                prepMode ? "bg-white" : "rounded-tr-[8px] bg-page",
+                thCentered,
+                "min-w-[132px] rounded-tr-[8px] pr-2",
+                stickyActionsHeaderClass(prepMode),
               )}
             >
               <StatusColumnLayout
+                header
                 gap="gap-3"
                 trailing={<span aria-hidden="true" />}
               >
                 <SortableHeader
+                  align="center"
                   label="Status"
                   onSort={handleSort}
                   sort={sort}
@@ -925,9 +1221,10 @@ export function EmployeeTable({
                         2 +
                         (prepMode ? 0 : adjustmentColumns.length)
                       }
-                      rightSectionColumnCount={
-                        prepMode ? RIGHT_SECTION_COLUMN_COUNT : 0
+                      adjustmentColumnCount={
+                        prepMode ? adjustmentColumns.length : 0
                       }
+                      showStatusColumn={prepMode}
                       someSelected={teamSomeSelected}
                       team={group.team}
                     />
@@ -948,6 +1245,7 @@ export function EmployeeTable({
               )}
         </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

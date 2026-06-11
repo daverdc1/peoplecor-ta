@@ -56,18 +56,18 @@ export function EmployeeActionsMenu({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex aspect-square size-8 shrink-0 cursor-pointer items-center justify-center rounded-sm text-ink hover:bg-surface-muted data-[state=open]:bg-surface-muted"
+            className="flex aspect-square size-8 shrink-0 cursor-pointer items-center justify-center rounded-sm text-ink hover:bg-ink/5 data-[state=open]:bg-ink/5"
             aria-label={`Actions for ${employeeName}`}
           >
             <MaterialIcon name="more_vert" size={20} />
           </button>
         </DropdownMenuTrigger>
       </HoverTooltip>
-      <DropdownMenuContent align="end" className="min-w-[200px]">
+      <DropdownMenuContent align="end" className="min-w-[11rem]">
         {approvalStatus === "pending" ? (
           <DropdownMenuItem
             className={cn(
-              "font-semibold text-success-dark focus:bg-success-muted focus:text-success-dark data-[highlighted]:bg-success-muted data-[highlighted]:text-success-dark",
+              "font-semibold text-success-text focus:bg-success-muted focus:text-success-text data-[highlighted]:bg-success-muted data-[highlighted]:text-success-text",
               hasAlerts && "opacity-50",
             )}
             {...inspectorProps(inspectorRegistry["ACT-APR"])}
@@ -84,12 +84,12 @@ export function EmployeeActionsMenu({
               disabled={!hasAlerts}
               label="Resolve alerts before approving"
             >
-              <span className="inline-flex w-full items-center gap-1.5">
+              <span className="inline-flex w-full items-center gap-1">
                 <MaterialIcon
                   name="check_circle"
                   className="text-success-dark"
                   filled
-                  size={14}
+                  size={12}
                 />
                 Approve timesheet
               </span>
@@ -103,27 +103,27 @@ export function EmployeeActionsMenu({
             {...inspectorProps(inspectorRegistry["ACT-UNA"])}
             onSelect={() => onUnapprove?.()}
           >
-            <MaterialIcon name="undo" className="text-warning-text" size={14} />
+            <MaterialIcon name="undo" className="text-warning-text" size={12} />
             Unapprove timesheet
           </DropdownMenuItem>
         )}
         <DropdownMenuItem>
-          <MaterialIcon name="verified" className="text-muted" size={14} />
+          <MaterialIcon name="verified" className="text-muted" size={12} />
           Verify labor
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="download" className="text-muted" size={14} />
+          <MaterialIcon name="download" className="text-muted" size={12} />
           Download timesheet
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem>
-          <MaterialIcon name="edit" className="text-muted" size={14} />
+          <MaterialIcon name="edit" className="text-muted" size={12} />
           Edit timesheet
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="edit" className="text-muted" size={14} />
+          <MaterialIcon name="edit" className="text-muted" size={12} />
           Edit wage
         </DropdownMenuItem>
 
@@ -133,30 +133,30 @@ export function EmployeeActionsMenu({
 
             <DropdownMenuLabel>Create Adjustment</DropdownMenuLabel>
             <DropdownMenuItem>
-              <MaterialIcon name="add_circle" className="text-muted" size={14} />
+              <MaterialIcon name="add_circle" className="text-muted" size={12} />
               One-Time Addition
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="add_circle" className="text-muted" size={14} />
+              <MaterialIcon name="add_circle" className="text-muted" size={12} />
               Recurring Addition
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
               One-Time Deduction
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
               Recurring Deduction
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
               Payroll Benefit
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
               Payroll Garnishment
             </DropdownMenuItem>
 
@@ -166,7 +166,7 @@ export function EmployeeActionsMenu({
               <MaterialIcon
                 name="account_balance"
                 className="text-muted"
-                size={14}
+                size={12}
               />
               Loan
             </DropdownMenuItem>
@@ -183,7 +183,7 @@ export function EmployeeActionsMenu({
           <MaterialIcon
             name="close"
             className="text-danger-text"
-            size={14}
+            size={12}
           />
           Delete timesheet
         </DropdownMenuItem>

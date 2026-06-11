@@ -4,6 +4,16 @@
   --font-sans: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Anonymous Pro", ui-monospace, monospace;
 
+  /* Brand */
+  --color-brand: #0eb1e6;
+  --color-brand-dark: #0097cb;
+  --color-brand-subtle: color-mix(in srgb, var(--color-brand) 5%, white);
+  --color-brand-muted: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
+  --color-brand-muted-on-white: color-mix(in srgb, var(--color-brand) 10%, white);
+  --color-nav-hover: color-mix(in srgb, var(--color-brand-dark) 90%, var(--color-ink));
+  --color-nav-active: color-mix(in srgb, var(--color-brand-dark) 82%, var(--color-ink));
+  --color-nav-active-hover: color-mix(in srgb, var(--color-brand-dark) 74%, var(--color-ink));
+
   /* Neutrals */
   --color-ink: #0e1821;
   --color-muted: #859098;
@@ -15,40 +25,35 @@
   --color-surface-muted-hover: color-mix(in srgb, var(--color-ink) 5%, var(--color-surface-muted));
   --color-border: #d5dce2;
   --color-border-input: #acb4ba;
+
+  /* Stats */
   --color-stats: #3d505f;
   --color-stats-badge: #20303e;
   --color-stats-badge-hover: #2c4050;
 
-  /* Brand */
-  --color-brand: #0eb1e6;
-  --color-brand-dark: #0097cb;
-  --color-brand-subtle: color-mix(in srgb, var(--color-brand) 5%, white);
-  --color-brand-muted: color-mix(in srgb, var(--color-brand) 10%, var(--color-page));
-  --color-brand-muted-on-white: color-mix(in srgb, var(--color-brand) 10%, white);
-  --color-nav-hover: color-mix(in srgb, var(--color-brand-dark) 50%, var(--color-brand));
-
   /* Success */
   --color-success: #57bc6f;
-  --color-success-dark: #357a47;
-  --color-success-pill-hover: #4aad63;
+  --color-success-text: #357a47;
+  --color-success-dark: #49a761;
   --color-success-muted: #57bc6f1a;
+  --color-success-pill-hover: #4aad63;
 
   /* Warning */
   --color-warning: #f5a623;
+  --color-warning-text: #a65300;
+  --color-warning-dark: #cc7700;
   --color-warning-muted: #f5a6231a;
-  --color-warning-text: #855709;
-  --color-warning-dark: #d27a43;
-  --color-warning-border: #eb925b;
-  --color-warning-pending: #855709;
+  --color-warning-pending: #a65300;
 
   /* Danger */
   --color-danger: #e95156;
-  --color-danger-dark: #e05252;
+  --color-danger-dark: #d03e3e;
   --color-danger-text: #b83237;
+  --color-danger-muted: #e951561a;
   --color-danger-subtle: color-mix(in srgb, var(--color-danger) 5%, white);
 
   /* Payroll */
-  --color-payroll-yellow: #ffc600;
+  --color-payroll-yellow: var(--color-warning);
 
   /* Table */
   --color-row-hover-left: color-mix(in srgb, var(--color-ink) 2.5%, var(--color-page));

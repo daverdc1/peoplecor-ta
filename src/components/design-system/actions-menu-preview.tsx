@@ -21,14 +21,14 @@ type ActionsMenuPreviewProps = {
 
 function menuPanelClassName(className?: string) {
   return cn(
-    "min-w-[200px] rounded-lg border border-border bg-white p-1 text-ink shadow-[0_8px_16px_rgba(0,0,0,0.16)]",
+    "min-w-[11rem] rounded-lg border border-border bg-white p-0.5 text-ink shadow-[0_8px_16px_rgba(0,0,0,0.16)]",
     className,
   );
 }
 
 function menuItemClassName(className?: string) {
   return cn(
-    "flex h-8 items-center gap-1.5 rounded-sm px-2 text-sm",
+    "flex h-7 items-center gap-1 rounded-sm px-1.5 text-xs leading-4",
     className,
   );
 }
@@ -43,18 +43,18 @@ function ActionsMenuPanel({
   return (
     <div className={menuPanelClassName(className)}>
       <div
-        className={menuItemClassName("font-semibold text-success-dark")}
+        className={menuItemClassName("font-semibold text-success-text")}
         {...inspectorProps(inspectorRegistry["DS-MNU-01"])}
       >
-        <MaterialIcon name="check_circle" className="text-success-dark" filled size={14} />
+        <MaterialIcon name="check_circle" className="text-success-dark" filled size={12} />
         Approve timesheet
       </div>
       <div className={menuItemClassName()} {...inspectorProps(inspectorRegistry["DS-MNU-02"])}>
-        <MaterialIcon name="verified" className="text-muted" size={14} />
+        <MaterialIcon name="verified" className="text-muted" size={12} />
         Verify labor
       </div>
       <div className={menuItemClassName()} {...inspectorProps(inspectorRegistry["DS-MNU-03"])}>
-        <MaterialIcon name="download" className="text-muted" size={14} />
+        <MaterialIcon name="download" className="text-muted" size={12} />
         Download timesheet
       </div>
 
@@ -63,7 +63,7 @@ function ActionsMenuPanel({
       </div>
 
       <div className={menuItemClassName()} {...inspectorProps(inspectorRegistry["DS-MNU-04"])}>
-        <MaterialIcon name="edit" className="text-muted" size={14} />
+        <MaterialIcon name="edit" className="text-muted" size={12} />
         Edit timesheet
       </div>
 
@@ -76,11 +76,11 @@ function ActionsMenuPanel({
             Create Adjustment
           </div>
           <div className={menuItemClassName()} {...inspectorProps(inspectorRegistry["DS-MNU-05"])}>
-            <MaterialIcon name="add_circle" className="text-muted" size={14} />
+            <MaterialIcon name="add_circle" className="text-muted" size={12} />
             One-Time Addition
           </div>
           <div className={menuItemClassName()} {...inspectorProps(inspectorRegistry["DS-MNU-06"])}>
-            <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+            <MaterialIcon name="remove_circle" className="text-muted" size={12} />
             Recurring Deduction
           </div>
         </>
@@ -94,7 +94,7 @@ function ActionsMenuPanel({
         className={menuItemClassName("text-danger-text")}
         {...inspectorProps(inspectorRegistry["DS-MNU-07"])}
       >
-        <MaterialIcon name="close" className="text-danger-text" size={14} />
+        <MaterialIcon name="close" className="text-danger-text" size={12} />
         Delete timesheet
       </div>
     </div>
@@ -125,8 +125,8 @@ export function ActionsMenuPreview({
   if (variant === "approve") {
     return (
       <div className={menuPanelClassName(className)}>
-        <div className={menuItemClassName("font-semibold text-success-dark")}>
-          <MaterialIcon name="check_circle" className="text-success-dark" filled size={14} />
+        <div className={menuItemClassName("font-semibold text-success-text")}>
+          <MaterialIcon name="check_circle" className="text-success-dark" filled size={12} />
           Approve timesheet
         </div>
       </div>
@@ -137,11 +137,11 @@ export function ActionsMenuPreview({
     return (
       <div className={menuPanelClassName(className)}>
         <div className={menuItemClassName()}>
-          <MaterialIcon name="verified" className="text-muted" size={14} />
+          <MaterialIcon name="verified" className="text-muted" size={12} />
           Verify labor
         </div>
         <div className={menuItemClassName()}>
-          <MaterialIcon name="download" className="text-muted" size={14} />
+          <MaterialIcon name="download" className="text-muted" size={12} />
           Download timesheet
         </div>
       </div>
@@ -155,11 +155,11 @@ export function ActionsMenuPreview({
           Create Adjustment
         </div>
         <div className={menuItemClassName()}>
-          <MaterialIcon name="add_circle" className="text-muted" size={14} />
+          <MaterialIcon name="add_circle" className="text-muted" size={12} />
           One-Time Addition
         </div>
         <div className={menuItemClassName()}>
-          <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+          <MaterialIcon name="remove_circle" className="text-muted" size={12} />
           Recurring Deduction
         </div>
       </div>
@@ -170,7 +170,7 @@ export function ActionsMenuPreview({
     return (
       <div className={menuPanelClassName(className)}>
         <div className={menuItemClassName("text-danger-text")}>
-          <MaterialIcon name="close" className="text-danger-text" size={14} />
+          <MaterialIcon name="close" className="text-danger-text" size={12} />
           Delete timesheet
         </div>
       </div>
@@ -201,7 +201,7 @@ export function ActionsMenuPreview({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex size-8 items-center justify-center rounded-sm text-ink hover:bg-surface-muted data-[state=open]:bg-surface-muted"
+            className="flex size-8 items-center justify-center rounded-sm text-ink hover:bg-ink/5 data-[state=open]:bg-ink/5"
           >
             <MaterialIcon name="more_vert" size={20} />
           </button>
@@ -211,24 +211,24 @@ export function ActionsMenuPreview({
           <DropdownMenuTrigger>Menu</DropdownMenuTrigger>
         </span>
       )}
-      <DropdownMenuContent align="start" className="min-w-[200px]">
-        <DropdownMenuItem className="font-semibold text-success-dark focus:bg-success-muted focus:text-success-dark data-[highlighted]:bg-success-muted data-[highlighted]:text-success-dark">
-          <MaterialIcon name="check_circle" className="text-success-dark" filled size={14} />
+      <DropdownMenuContent align="start" className="min-w-[11rem]">
+        <DropdownMenuItem className="font-semibold text-success-text focus:bg-success-muted focus:text-success-text data-[highlighted]:bg-success-muted data-[highlighted]:text-success-text">
+          <MaterialIcon name="check_circle" className="text-success-dark" filled size={12} />
           Approve timesheet
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="verified" className="text-muted" size={14} />
+          <MaterialIcon name="verified" className="text-muted" size={12} />
           Verify labor
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="download" className="text-muted" size={14} />
+          <MaterialIcon name="download" className="text-muted" size={12} />
           Download timesheet
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem>
-          <MaterialIcon name="edit" className="text-muted" size={14} />
+          <MaterialIcon name="edit" className="text-muted" size={12} />
           Edit timesheet
         </DropdownMenuItem>
 
@@ -237,11 +237,11 @@ export function ActionsMenuPreview({
             <DropdownMenuSeparator />
             <DropdownMenuLabel>Create Adjustment</DropdownMenuLabel>
             <DropdownMenuItem>
-              <MaterialIcon name="add_circle" className="text-muted" size={14} />
+              <MaterialIcon name="add_circle" className="text-muted" size={12} />
               One-Time Addition
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
               Recurring Deduction
             </DropdownMenuItem>
           </>
@@ -250,7 +250,7 @@ export function ActionsMenuPreview({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem className="text-danger-text focus:bg-danger-subtle focus:text-danger-text data-[highlighted]:bg-danger-subtle data-[highlighted]:text-danger-text">
-          <MaterialIcon name="close" className="text-danger-text" size={14} />
+          <MaterialIcon name="close" className="text-danger-text" size={12} />
           Delete timesheet
         </DropdownMenuItem>
       </DropdownMenuContent>

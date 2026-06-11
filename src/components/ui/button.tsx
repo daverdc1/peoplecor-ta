@@ -4,18 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-sm text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:pointer-events-none disabled:border-transparent disabled:bg-surface-muted disabled:text-muted disabled:opacity-100",
+  "inline-flex cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-sm text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-100",
   {
     variants: {
       variant: {
-        default: "bg-brand-dark text-white hover:bg-brand",
+        default:
+          "bg-brand-dark text-white hover:bg-brand disabled:border-transparent disabled:bg-surface-muted disabled:text-muted",
         outline:
-          "border border-white bg-transparent text-white hover:bg-white/10",
+          "border border-white bg-transparent text-white hover:bg-white/10 disabled:border-white/30 disabled:bg-transparent disabled:text-muted",
         brandOutline:
-          "border border-brand bg-white text-brand hover:bg-brand-subtle",
-        ghost: "bg-transparent hover:bg-surface-muted",
+          "border border-brand-dark bg-white text-brand-dark hover:bg-brand-subtle disabled:border-border disabled:bg-white disabled:text-muted",
         success:
-          "border border-success bg-success-muted text-ink hover:bg-success/15",
+          "border-0 bg-success-text text-white hover:bg-success-dark disabled:border-transparent disabled:bg-surface-muted disabled:text-muted",
+        warning:
+          "border-0 bg-warning-dark text-white hover:bg-warning disabled:border-transparent disabled:bg-surface-muted disabled:text-muted",
+        ghost:
+          "bg-transparent hover:bg-surface-muted disabled:bg-transparent disabled:text-muted",
       },
       size: {
         default: "h-8 px-3 py-1.5 text-xs uppercase",

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { MaterialIcon } from "@/components/icons/material-icon";
 import { DesignSystemSidebar } from "@/components/design-system/design-system-sidebar";
 import { FoundationsShowcase } from "@/components/design-system/foundations-showcase";
 import { PatternsShowcase } from "@/components/design-system/patterns-showcase";
@@ -12,6 +13,52 @@ import {
 import { getDesignSystemSectionId } from "@/lib/design-system-catalog";
 import { inspectorRegistry } from "@/lib/inspector-registry";
 import { inspectorProps } from "@/lib/inspector";
+import { cn } from "@/lib/utils";
+
+type DesignSystemCollapsibleSectionProps = {
+  children: ReactNode;
+  className?: string;
+  defaultExpanded?: boolean;
+  id: string;
+  inspectorEntry?: (typeof inspectorRegistry)[keyof typeof inspectorRegistry];
+  title: string;
+};
+
+function DesignSystemCollapsibleSection({
+  children,
+  className,
+  defaultExpanded = true,
+  id,
+  inspectorEntry,
+  title,
+}: DesignSystemCollapsibleSectionProps) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
+  return (
+    <section
+      className={cn("scroll-mt-8", className)}
+      id={id}
+      {...(inspectorEntry ? inspectorProps(inspectorEntry) : {})}
+    >
+      <button
+        type="button"
+        aria-expanded={expanded}
+        className="flex w-full cursor-pointer items-center gap-2 text-left"
+        onClick={() => setExpanded((current) => !current)}
+      >
+        <h2 className="ds-heading m-0 text-2xl font-semibold tracking-tight text-ink">
+          {title}
+        </h2>
+        <MaterialIcon
+          name={expanded ? "expand_less" : "expand_more"}
+          className="shrink-0 text-subtle"
+          size={24}
+        />
+      </button>
+      {expanded ? <div className="mt-8">{children}</div> : null}
+    </section>
+  );
+}
 
 type DesignSystemPageProps = {
   focusExampleId?: string | null;
@@ -91,44 +138,32 @@ export function DesignSystemPage({
         </aside>
 
         <main className="min-w-0 flex-1 px-6 py-10 lg:px-10 lg:py-12">
-          <section
-            className="scroll-mt-8 pb-20"
+          <DesignSystemCollapsibleSection
+            className="pb-20"
             id="ds-foundations"
-            {...inspectorProps(inspectorRegistry["DS-FND"])}
+            inspectorEntry={inspectorRegistry["DS-FND"]}
+            title="Foundations"
           >
-            <h2 className="ds-heading m-0 text-2xl font-semibold tracking-tight text-ink">
-              Foundations
-            </h2>
-            <div className="mt-8">
-              <FoundationsShowcase />
-            </div>
-          </section>
+            <FoundationsShowcase />
+          </DesignSystemCollapsibleSection>
 
-          <section
-            className="scroll-mt-8 border-t border-border pb-20 pt-20"
+          <DesignSystemCollapsibleSection
+            className="border-t border-border pb-20 pt-20"
             id="ds-components"
-            {...inspectorProps(inspectorRegistry["DS-CMP"])}
+            inspectorEntry={inspectorRegistry["DS-CMP"]}
+            title="Components"
           >
-            <h2 className="ds-heading m-0 text-2xl font-semibold tracking-tight text-ink">
-              Components
-            </h2>
-            <div className="mt-8">
-              <UiComponentsShowcase />
-            </div>
-          </section>
+            <UiComponentsShowcase />
+          </DesignSystemCollapsibleSection>
 
-          <section
-            className="scroll-mt-8 border-t border-border pt-20"
+          <DesignSystemCollapsibleSection
+            className="border-t border-border pt-20"
             id="ds-patterns"
-            {...inspectorProps(inspectorRegistry["DS-PAT"])}
+            inspectorEntry={inspectorRegistry["DS-PAT"]}
+            title="Patterns"
           >
-            <h2 className="ds-heading m-0 text-2xl font-semibold tracking-tight text-ink">
-              Patterns
-            </h2>
-            <div className="mt-8">
-              <PatternsShowcase />
-            </div>
-          </section>
+            <PatternsShowcase />
+          </DesignSystemCollapsibleSection>
         </main>
       </div>
 

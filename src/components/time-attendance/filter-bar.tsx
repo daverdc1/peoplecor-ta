@@ -137,7 +137,7 @@ export function FilterBar({
         {employmentStatusFilter.length > 0 ? (
           <button
             type="button"
-            className="cursor-pointer text-xs font-normal text-brand hover:underline"
+            className="cursor-pointer text-xs font-normal text-brand-dark hover:underline"
             onClick={() => onEmploymentStatusFilterChange([])}
           >
             Remove filters

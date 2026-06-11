@@ -8,7 +8,7 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-stats-badge text-white",
-        success: "bg-success-dark text-white",
+        success: "bg-success-text text-white",
         muted: "bg-stats-badge text-white",
       },
     },
