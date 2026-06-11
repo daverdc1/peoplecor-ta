@@ -293,7 +293,7 @@ function StatusColumnLayout({
     >
       <div
         className={cn(
-          "flex min-w-0 flex-1 justify-center",
+          "flex min-w-0 flex-1 items-center justify-center",
           header && "h-full",
         )}
       >

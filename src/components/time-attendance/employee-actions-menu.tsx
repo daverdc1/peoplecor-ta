@@ -63,7 +63,7 @@ export function EmployeeActionsMenu({
           </button>
         </DropdownMenuTrigger>
       </HoverTooltip>
-      <DropdownMenuContent align="end" className="min-w-[11rem]">
+      <DropdownMenuContent align="end" className="min-w-[200px]">
         {approvalStatus === "pending" ? (
           <DropdownMenuItem
             className={cn(
@@ -84,12 +84,12 @@ export function EmployeeActionsMenu({
               disabled={!hasAlerts}
               label="Resolve alerts before approving"
             >
-              <span className="inline-flex w-full items-center gap-1">
+              <span className="inline-flex w-full items-center gap-1.5">
                 <MaterialIcon
                   name="check_circle"
                   className="text-success-dark"
                   filled
-                  size={12}
+                  size={14}
                 />
                 Approve timesheet
               </span>
@@ -103,27 +103,27 @@ export function EmployeeActionsMenu({
             {...inspectorProps(inspectorRegistry["ACT-UNA"])}
             onSelect={() => onUnapprove?.()}
           >
-            <MaterialIcon name="undo" className="text-warning-text" size={12} />
+            <MaterialIcon name="undo" className="text-warning-text" size={14} />
             Unapprove timesheet
           </DropdownMenuItem>
         )}
         <DropdownMenuItem>
-          <MaterialIcon name="verified" className="text-muted" size={12} />
+          <MaterialIcon name="verified" className="text-muted" size={14} />
           Verify labor
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="download" className="text-muted" size={12} />
+          <MaterialIcon name="download" className="text-muted" size={14} />
           Download timesheet
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
         <DropdownMenuItem>
-          <MaterialIcon name="edit" className="text-muted" size={12} />
+          <MaterialIcon name="edit" className="text-muted" size={14} />
           Edit timesheet
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <MaterialIcon name="edit" className="text-muted" size={12} />
+          <MaterialIcon name="edit" className="text-muted" size={14} />
           Edit wage
         </DropdownMenuItem>
 
@@ -133,30 +133,30 @@ export function EmployeeActionsMenu({
 
             <DropdownMenuLabel>Create Adjustment</DropdownMenuLabel>
             <DropdownMenuItem>
-              <MaterialIcon name="add_circle" className="text-muted" size={12} />
+              <MaterialIcon name="add_circle" className="text-muted" size={14} />
               One-Time Addition
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="add_circle" className="text-muted" size={12} />
+              <MaterialIcon name="add_circle" className="text-muted" size={14} />
               Recurring Addition
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
 
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
               One-Time Deduction
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
               Recurring Deduction
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
               Payroll Benefit
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <MaterialIcon name="remove_circle" className="text-muted" size={12} />
+              <MaterialIcon name="remove_circle" className="text-muted" size={14} />
               Payroll Garnishment
             </DropdownMenuItem>
 
@@ -166,7 +166,7 @@ export function EmployeeActionsMenu({
               <MaterialIcon
                 name="account_balance"
                 className="text-muted"
-                size={12}
+                size={14}
               />
               Loan
             </DropdownMenuItem>
@@ -183,7 +183,7 @@ export function EmployeeActionsMenu({
           <MaterialIcon
             name="close"
             className="text-danger-text"
-            size={12}
+            size={14}
           />
           Delete timesheet
         </DropdownMenuItem>

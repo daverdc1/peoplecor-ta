@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { MaterialIcon } from "@/components/icons/material-icon";
 import { StatusPill, statusPillVariants } from "@/components/ui/status-pill";
 import { HoverTooltip } from "@/components/ui/truncated-text";
@@ -20,6 +21,15 @@ type EmployeeApprovalPillProps = {
 const actionPillClass =
   "cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed";
 
+const pillIconSlotClass =
+  "inline-flex size-3 shrink-0 items-center justify-center";
+
+function PillIcon({ children }: { children: ReactNode }) {
+  return <span className={pillIconSlotClass}>{children}</span>;
+}
+
+const pillWrapperClass = "inline-flex h-5 items-center";
+
 export function EmployeeApprovalPill({
   employeeName,
   hasAlerts = false,
@@ -35,9 +45,16 @@ export function EmployeeApprovalPill({
   if (!prepMode) {
     if (isApproved) {
       return (
-        <span {...inspectorProps(inspectorRegistry["PIL-APR"])}>
+        <span
+          className={pillWrapperClass}
+          {...inspectorProps(inspectorRegistry["PIL-APR"])}
+        >
           <StatusPill
-            icon={<MaterialIcon name="check" className="text-white" filled size={12} />}
+            icon={
+              <PillIcon>
+                <MaterialIcon name="check" className="text-white" filled size={12} />
+              </PillIcon>
+            }
             variant="success"
           >
             Approved
@@ -47,10 +64,15 @@ export function EmployeeApprovalPill({
     }
 
     return (
-      <span {...inspectorProps(inspectorRegistry["PIL-PND"])}>
+      <span
+        className={pillWrapperClass}
+        {...inspectorProps(inspectorRegistry["PIL-PND"])}
+      >
         <StatusPill
           icon={
-            <MaterialIcon name="hourglass_top" className="text-warning-text" size={12} />
+            <PillIcon>
+              <MaterialIcon name="hourglass_top" className="text-warning-text" size={12} />
+            </PillIcon>
           }
           variant="warning"
         >
@@ -62,8 +84,11 @@ export function EmployeeApprovalPill({
 
   if (isApproved) {
     return (
-      <span {...inspectorProps(inspectorRegistry["PIL-APR"])}>
-        <HoverTooltip label="Unapprove">
+      <span
+        className={pillWrapperClass}
+        {...inspectorProps(inspectorRegistry["PIL-APR"])}
+      >
+        <HoverTooltip label="Unapprove" placement="left" showDelayMs={500}>
           <button
             type="button"
             className={cn(
@@ -73,7 +98,9 @@ export function EmployeeApprovalPill({
             )}
             onClick={onUnapprove}
           >
-            <MaterialIcon name="check" className="text-white" filled size={12} />
+            <PillIcon>
+              <MaterialIcon name="check" className="text-white" filled size={12} />
+            </PillIcon>
             Approved
           </button>
         </HoverTooltip>
@@ -82,7 +109,10 @@ export function EmployeeApprovalPill({
   }
 
   return (
-    <span {...inspectorProps(inspectorRegistry["PIL-PND"])}>
+    <span
+      className={pillWrapperClass}
+      {...inspectorProps(inspectorRegistry["PIL-PND"])}
+    >
       <HoverTooltip
         label={
           hasAlerts ? (

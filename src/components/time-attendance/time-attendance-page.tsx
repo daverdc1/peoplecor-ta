@@ -80,7 +80,7 @@ export function TimeAttendancePage({
     EmploymentStatus[]
   >([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [prepMode, setPrepMode] = useState(true);
+  const [prepMode, setPrepMode] = useState(false);
   const [payPeriodId, setPayPeriodId] = useState<PayPeriodId>("june-1-15");
   const [searchQuery, setSearchQuery] = useState("");
   const employees = useMemo(
