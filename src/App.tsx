@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DesignSystemButton } from "@/components/design-system/design-system-button";
 import { DesignSystemPage } from "@/components/design-system/design-system-page";
 import { MonoFontComparisonPage } from "@/components/temporary/mono-font-comparison-page";
@@ -7,6 +7,7 @@ import { Inspector } from "@/components/inspector/inspector";
 import { TimeAttendancePage } from "@/components/time-attendance/time-attendance-page";
 import { INSPECTOR_IGNORE_ATTR } from "@/lib/inspector";
 import { getInspectorEntryForSection } from "@/lib/inspector-registry";
+import { useInspectorUnlock } from "@/hooks/use-inspector-unlock";
 import { cn } from "@/lib/utils";
 
 type InspectorReturnContext = {
@@ -34,6 +35,13 @@ export default function App() {
   const [inspectorReturnContext, setInspectorReturnContext] =
     useState<InspectorReturnContext | null>(null);
   const [restoreInspectorCode, setRestoreInspectorCode] = useState<string | null>(null);
+  const inspectorUnlocked = useInspectorUnlock();
+
+  useEffect(() => {
+    if (!inspectorUnlocked) {
+      setInspectorActive(false);
+    }
+  }, [inspectorUnlocked]);
 
   const handleOpenDesignSystemSection = (
     sectionId: string,
@@ -112,7 +120,7 @@ export default function App() {
         />
       )}
 
-      {inspectorActive ? (
+      {inspectorUnlocked && inspectorActive ? (
         <Inspector
           appViewActive={!showDesignSystem}
           canGoBack={inspectorReturnContext != null}
@@ -131,22 +139,24 @@ export default function App() {
         {...{ [INSPECTOR_IGNORE_ATTR]: true }}
         className="fixed right-4 bottom-4 z-[100] flex gap-2"
       >
-        <DesignSystemButton
-          aria-label={inspectorActive ? "Close inspector" : "Open inspector"}
-          className={cn(
-            "shadow-md",
-            inspectorActive &&
-              "border-inspector bg-inspector text-white hover:border-inspector hover:bg-inspector",
-          )}
-          onClick={() => setInspectorActive((current) => !current)}
-        >
-          <MaterialIcon
-            name={inspectorActive ? "visibility" : "visibility_off"}
-            size={12}
-            className={inspectorActive ? "text-white" : undefined}
-          />
-          Inspector
-        </DesignSystemButton>
+        {inspectorUnlocked ? (
+          <DesignSystemButton
+            aria-label={inspectorActive ? "Close inspector" : "Open inspector"}
+            className={cn(
+              "shadow-md",
+              inspectorActive &&
+                "border-inspector bg-inspector text-white hover:border-inspector hover:bg-inspector",
+            )}
+            onClick={() => setInspectorActive((current) => !current)}
+          >
+            <MaterialIcon
+              name={inspectorActive ? "visibility" : "visibility_off"}
+              size={12}
+              className={inspectorActive ? "text-white" : undefined}
+            />
+            Inspector
+          </DesignSystemButton>
+        ) : null}
         <DesignSystemButton
           aria-label={showDesignSystem ? "Back to app" : "Open design system"}
           className="shadow-md"
